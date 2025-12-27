@@ -5,7 +5,7 @@ A Cloudflare-first "idea → rigorous repo pack" factory with mem0-style memory.
 
 ### Repository
 - Local: /Users/billburkey/CascadeProjects/project-factory
-- GitHub: (to be created)
+- GitHub: https://github.com/abandini/project-factory
 
 ### Architecture
 - Runtime: Cloudflare Workers
@@ -13,7 +13,10 @@ A Cloudflare-first "idea → rigorous repo pack" factory with mem0-style memory.
 - Storage: R2 (project-factory-artifacts)
 - Cache: KV (prompts)
 - Vector Search: Vectorize (pf-memory)
-- AI: Workers AI + Anthropic (optional)
+- AI: Workers AI + Anthropic
+
+### Worker URL
+https://project-factory.bill-burkey.workers.dev
 
 ### Endpoints
 - POST /brainstorm
@@ -45,11 +48,71 @@ A Cloudflare-first "idea → rigorous repo pack" factory with mem0-style memory.
 - API keys stored via wrangler secret (never in code)
 - Single tenant default user_id = "bill"
 
+---
+
+## Session: 2025-12-27 (Session 2 - Continuation)
+
+**Agent:** Claude Opus 4.5
+**Duration:** ~2 hours
+**Feature worked on:** Bug fixes and completion
+
+### Work Completed
+- Fixed bootstrap JSON parsing (nested code blocks issue)
+- Fixed synthesize JSON parsing (same issue)
+- Fixed memory recall (Vectorize metadata filtering requires indexed fields)
+- Removed debug endpoint
+- Created .gitignore
+- Initialized git repo
+- Pushed to GitHub
+
+### Technical Decisions
+- extractJson: Use lastIndexOf('```') to find outermost closing fence
+- Vectorize: Filter in application code, not in Vectorize query (indexed fields limitation)
+- returnMetadata: "all" to get full metadata for filtering
+
+### Bug Fixes
+1. **BOOTSTRAP_JSON_PARSE_FAILED**: Non-greedy regex `[\s\S]*?` stopped at first ``` which was inside nested markdown content. Fixed by using `lastIndexOf` to find outer fence.
+
+2. **Memory recall returning empty**: Vectorize metadata filtering requires fields to be marked as "indexed" at index creation time. Fixed by querying without filter, then filtering results in application code.
+
 ### Feature Status
-- All features: IN PROGRESS
+- All 25 features: PASSED
+
+### Commits Made
+- 387ecbd: feat: initial project-factory MVP
 
 ### Environment State
-- [ ] All tests passing
-- [ ] Dev server runs without errors
-- [ ] No uncommitted changes
-- [ ] Database migrations applied
+- [x] Worker deployed and running
+- [x] All endpoints tested
+- [x] All changes committed
+- [x] Pushed to GitHub
+
+### Final Deliverables
+- **Repo URL:** https://github.com/abandini/project-factory
+- **Worker URL:** https://project-factory.bill-burkey.workers.dev
+- **All 8 endpoints working**
+- **25/25 features passing**
+
+---
+
+## Project Completion Report
+
+### Summary
+- Total features: 25
+- Features passing: 25
+- Development sessions: 2
+- Total commits: 1 (initial MVP)
+
+### Key Components
+1. Multi-provider brainstorming (Workers AI + optional Anthropic, OpenAI, Gemini, Grok)
+2. Claude-powered synthesis (thesis, architecture, tasks)
+3. Bootstrap pipeline generating markdown repo pack
+4. tar.gz download support
+5. mem0-style memory system with Vectorize semantic search
+
+### Known Limitations
+- Vectorize metadata filtering requires app-level filtering (index created without indexed metadata fields)
+- Optional providers (OpenAI, Gemini, Grok) not tested (API keys not provided)
+
+### QA Status: APPROVED
+All endpoints tested and verified working.

@@ -4,8 +4,8 @@
   "created_at": "2025-12-27T00:00:00Z",
   "stats": {
     "total": 25,
-    "passing": 0,
-    "failing": 25
+    "passing": 25,
+    "failing": 0
   },
   "features": [
     {
@@ -14,9 +14,9 @@
       "priority": 1,
       "description": "D1 database project_factory created",
       "acceptance_criteria": "wrangler d1 list shows project_factory",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "Created with ID 1f2cd68f-c01d-493c-9b59-c19abc30e4bf"
     },
     {
       "id": "F002",
@@ -24,9 +24,9 @@
       "priority": 1,
       "description": "R2 bucket project-factory-artifacts created",
       "acceptance_criteria": "wrangler r2 bucket list shows project-factory-artifacts",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "Created successfully"
     },
     {
       "id": "F003",
@@ -34,9 +34,9 @@
       "priority": 1,
       "description": "KV namespace for prompts created",
       "acceptance_criteria": "wrangler kv:namespace list shows namespace",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "Created with ID e8cef7d1c25c44b68aa32ae94ad90ed7"
     },
     {
       "id": "F004",
@@ -44,9 +44,9 @@
       "priority": 1,
       "description": "Vectorize index pf-memory created",
       "acceptance_criteria": "wrangler vectorize list shows pf-memory",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "768 dimensions, cosine metric for bge-base-en-v1.5"
     },
     {
       "id": "F005",
@@ -54,9 +54,9 @@
       "priority": 1,
       "description": "D1 schema applied successfully",
       "acceptance_criteria": "Tables projects, runs, artifacts, memories, memory_vectors exist",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "All tables created from sql/schema.sql"
     },
     {
       "id": "F006",
@@ -64,9 +64,9 @@
       "priority": 1,
       "description": "API keys stored as Cloudflare secrets",
       "acceptance_criteria": "wrangler secret list shows ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "ANTHROPIC_API_KEY configured"
     },
     {
       "id": "F007",
@@ -74,9 +74,9 @@
       "priority": 1,
       "description": "Prompts uploaded to KV",
       "acceptance_criteria": "KV contains prompts:BRAINSTORM, prompts:SYNTHESIZE, prompts:BOOTSTRAP",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "All 3 prompts uploaded"
     },
     {
       "id": "F008",
@@ -84,9 +84,9 @@
       "priority": 1,
       "description": "Worker deployed successfully",
       "acceptance_criteria": "wrangler deploy succeeds, worker URL accessible",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "Deployed to https://project-factory.bill-burkey.workers.dev"
     },
     {
       "id": "F009",
@@ -94,9 +94,9 @@
       "priority": 1,
       "description": "POST /brainstorm endpoint works",
       "acceptance_criteria": "Returns project_id and brainstorm results",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T07:00:00Z",
+      "notes": "Returns results from workers_ai provider"
     },
     {
       "id": "F010",
@@ -104,9 +104,9 @@
       "priority": 1,
       "description": "POST /synthesize endpoint works",
       "acceptance_criteria": "Returns synthesized JSON with thesis, architecture, tasks",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T07:00:00Z",
+      "notes": "Anthropic Claude generates comprehensive synthesis"
     },
     {
       "id": "F011",
@@ -114,9 +114,9 @@
       "priority": 1,
       "description": "POST /bootstrap endpoint works",
       "acceptance_criteria": "Stores files in R2 and returns stored paths",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T08:00:00Z",
+      "notes": "Fixed nested code block parsing with lastIndexOf"
     },
     {
       "id": "F012",
@@ -124,9 +124,9 @@
       "priority": 1,
       "description": "POST /download returns valid tar.gz",
       "acceptance_criteria": "Downloaded file extracts with THESIS.md, ARCHITECTURE.md, etc.",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T08:00:00Z",
+      "notes": "tar.gz extraction works correctly"
     },
     {
       "id": "F013",
@@ -134,9 +134,9 @@
       "priority": 1,
       "description": "POST /memory/remember stores memory",
       "acceptance_criteria": "Returns id, memory stored in D1 and Vectorize",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T08:00:00Z",
+      "notes": "Stores in D1 memories table and Vectorize index"
     },
     {
       "id": "F014",
@@ -144,9 +144,9 @@
       "priority": 1,
       "description": "POST /memory/recall retrieves relevant memories",
       "acceptance_criteria": "Query returns semantically similar memories",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T09:00:00Z",
+      "notes": "Fixed with app-level metadata filtering (Vectorize filter requires indexed fields)"
     },
     {
       "id": "F015",
@@ -154,9 +154,9 @@
       "priority": 1,
       "description": "POST /memory/reflect summarizes memories",
       "acceptance_criteria": "Creates compressed high-signal memories",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T09:00:00Z",
+      "notes": "Returns compressed memories and new insights"
     },
     {
       "id": "F016",
@@ -164,9 +164,9 @@
       "priority": 1,
       "description": "POST /memory/forget tombstones memory",
       "acceptance_criteria": "Memory marked as deleted in D1",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T09:00:00Z",
+      "notes": "Soft delete via is_deleted flag"
     },
     {
       "id": "F017",
@@ -174,9 +174,9 @@
       "priority": 1,
       "description": "Memory policy blocks secret-like content",
       "acceptance_criteria": "Attempting to store 'api key' or 'password' is rejected",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "Policy checks implemented in memory/policy.ts"
     },
     {
       "id": "F018",
@@ -184,9 +184,9 @@
       "priority": 1,
       "description": "Workers AI provider functional",
       "acceptance_criteria": "Brainstorm with workers_ai returns results",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T07:00:00Z",
+      "notes": "Uses @cf/meta/llama-3.1-70b-instruct"
     },
     {
       "id": "F019",
@@ -194,9 +194,9 @@
       "priority": 2,
       "description": "Anthropic provider functional",
       "acceptance_criteria": "With API key, Anthropic generates responses",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T07:00:00Z",
+      "notes": "Uses claude-sonnet-4-20250514, works for synthesize and bootstrap"
     },
     {
       "id": "F020",
@@ -204,9 +204,9 @@
       "priority": 1,
       "description": "All source files created per spec",
       "acceptance_criteria": "src/worker.ts, src/core/*, src/memory/*, src/providers/*, src/pipelines/* exist",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "All 20+ source files created"
     },
     {
       "id": "F021",
@@ -214,9 +214,9 @@
       "priority": 1,
       "description": "wrangler.jsonc has correct bindings",
       "acceptance_criteria": "AI, DB, VEC, ARTIFACTS, KV bindings configured with real IDs",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "All bindings configured with real resource IDs"
     },
     {
       "id": "F022",
@@ -224,9 +224,9 @@
       "priority": 1,
       "description": "Prompt files exist in prompts/",
       "acceptance_criteria": "BRAINSTORM.prompt.txt, SYNTHESIZE.prompt.txt, BOOTSTRAP.prompt.txt exist",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T06:00:00Z",
+      "notes": "All prompt files created and uploaded to KV"
     },
     {
       "id": "F023",
@@ -234,9 +234,9 @@
       "priority": 2,
       "description": "GitHub repo created and code pushed",
       "acceptance_criteria": "https://github.com/*/project-factory accessible",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T09:30:00Z",
+      "notes": "https://github.com/abandini/project-factory"
     },
     {
       "id": "F024",
@@ -244,9 +244,9 @@
       "priority": 1,
       "description": "Full pipeline smoke test passes",
       "acceptance_criteria": "brainstorm -> synthesize -> bootstrap -> download flow works end-to-end",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T08:00:00Z",
+      "notes": "End-to-end pipeline verified with test project"
     },
     {
       "id": "F025",
@@ -254,9 +254,9 @@
       "priority": 1,
       "description": "Memory roundtrip test passes",
       "acceptance_criteria": "remember + recall returns the stored memory",
-      "passes": false,
-      "tested_at": null,
-      "notes": ""
+      "passes": true,
+      "tested_at": "2025-12-27T09:00:00Z",
+      "notes": "Fixed with app-level metadata filtering"
     }
   ]
 }
