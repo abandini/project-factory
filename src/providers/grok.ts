@@ -17,7 +17,7 @@ export const GrokProvider: Provider = {
         "Authorization": `Bearer ${env.GROK_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "grok-beta",
+        model: "grok-3",
         max_tokens: 4096,
         temperature: 0.4,
         messages: [{ role: "user", content: prompt }],
