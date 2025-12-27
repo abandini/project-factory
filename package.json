@@ -1,0 +1,19 @@
+{
+  "name": "project-factory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "d1:schema": "wrangler d1 execute project_factory --file=./sql/schema.sql"
+  },
+  "dependencies": {
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251201.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.99.0"
+  }
+}

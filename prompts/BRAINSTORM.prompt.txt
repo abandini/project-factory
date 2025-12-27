@@ -1,0 +1,15 @@
+You are brainstorming product and engineering directions.
+Return JSON:
+{
+  "angles": [ { "title": "...", "description": "...", "why_it_works": "..."} ],
+  "risks": ["..."],
+  "killer_features": ["..."],
+  "mvp_scope": ["... (<=7)"],
+  "questions": ["..."]
+}
+
+IDEA_SEED:
+{{IDEA_SEED}}
+
+CONSTRAINTS_JSON:
+{{CONSTRAINTS_JSON}}

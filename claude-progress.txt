@@ -1,0 +1,55 @@
+# project-factory Progress Tracking
+
+## Project Overview
+A Cloudflare-first "idea → rigorous repo pack" factory with mem0-style memory.
+
+### Repository
+- Local: /Users/billburkey/CascadeProjects/project-factory
+- GitHub: (to be created)
+
+### Architecture
+- Runtime: Cloudflare Workers
+- Database: D1 (project_factory)
+- Storage: R2 (project-factory-artifacts)
+- Cache: KV (prompts)
+- Vector Search: Vectorize (pf-memory)
+- AI: Workers AI + Anthropic (optional)
+
+### Endpoints
+- POST /brainstorm
+- POST /synthesize
+- POST /bootstrap
+- POST /download
+- POST /memory/remember
+- POST /memory/recall
+- POST /memory/reflect
+- POST /memory/forget
+
+---
+
+## Session: 2025-12-27 (Session 1)
+
+**Agent:** Claude Opus 4.5
+**Feature working on:** Infrastructure setup and full deployment
+
+### Work Planned
+1. Create all project files per spec
+2. Provision Cloudflare resources (D1, R2, KV, Vectorize)
+3. Store API keys as secrets
+4. Deploy worker
+5. Smoke test all endpoints
+6. Push to GitHub
+
+### Technical Decisions
+- Using spec exactly as provided
+- API keys stored via wrangler secret (never in code)
+- Single tenant default user_id = "bill"
+
+### Feature Status
+- All features: IN PROGRESS
+
+### Environment State
+- [ ] All tests passing
+- [ ] Dev server runs without errors
+- [ ] No uncommitted changes
+- [ ] Database migrations applied

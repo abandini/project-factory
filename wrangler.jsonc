@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "project-factory",
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-12-27",
+
+  "ai": { "binding": "AI" },
+
+  "d1_databases": [
+    { "binding": "DB", "database_name": "project_factory", "database_id": "3325e162-8da6-4229-92b5-125d385f5eb4" }
+  ],
+
+  "vectorize": [
+    { "binding": "VEC", "index_name": "pf-memory" }
+  ],
+
+  "r2_buckets": [
+    { "binding": "ARTIFACTS", "bucket_name": "project-factory-artifacts" }
+  ],
+
+  "kv_namespaces": [
+    { "binding": "KV", "id": "c035637ce7a64d7c8417bb3445f6c6c6" }
+  ]
+}

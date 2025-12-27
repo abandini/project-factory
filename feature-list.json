@@ -1,0 +1,262 @@
+{
+  "project": "project-factory",
+  "description": "Cloudflare-first idea-to-repo-pack factory with mem0-style memory",
+  "created_at": "2025-12-27T00:00:00Z",
+  "stats": {
+    "total": 25,
+    "passing": 0,
+    "failing": 25
+  },
+  "features": [
+    {
+      "id": "F001",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "D1 database project_factory created",
+      "acceptance_criteria": "wrangler d1 list shows project_factory",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F002",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "R2 bucket project-factory-artifacts created",
+      "acceptance_criteria": "wrangler r2 bucket list shows project-factory-artifacts",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F003",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "KV namespace for prompts created",
+      "acceptance_criteria": "wrangler kv:namespace list shows namespace",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F004",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "Vectorize index pf-memory created",
+      "acceptance_criteria": "wrangler vectorize list shows pf-memory",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F005",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "D1 schema applied successfully",
+      "acceptance_criteria": "Tables projects, runs, artifacts, memories, memory_vectors exist",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F006",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "API keys stored as Cloudflare secrets",
+      "acceptance_criteria": "wrangler secret list shows ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F007",
+      "category": "infrastructure",
+      "priority": 1,
+      "description": "Prompts uploaded to KV",
+      "acceptance_criteria": "KV contains prompts:BRAINSTORM, prompts:SYNTHESIZE, prompts:BOOTSTRAP",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F008",
+      "category": "deployment",
+      "priority": 1,
+      "description": "Worker deployed successfully",
+      "acceptance_criteria": "wrangler deploy succeeds, worker URL accessible",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F009",
+      "category": "endpoint",
+      "priority": 1,
+      "description": "POST /brainstorm endpoint works",
+      "acceptance_criteria": "Returns project_id and brainstorm results",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F010",
+      "category": "endpoint",
+      "priority": 1,
+      "description": "POST /synthesize endpoint works",
+      "acceptance_criteria": "Returns synthesized JSON with thesis, architecture, tasks",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F011",
+      "category": "endpoint",
+      "priority": 1,
+      "description": "POST /bootstrap endpoint works",
+      "acceptance_criteria": "Stores files in R2 and returns stored paths",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F012",
+      "category": "endpoint",
+      "priority": 1,
+      "description": "POST /download returns valid tar.gz",
+      "acceptance_criteria": "Downloaded file extracts with THESIS.md, ARCHITECTURE.md, etc.",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F013",
+      "category": "memory",
+      "priority": 1,
+      "description": "POST /memory/remember stores memory",
+      "acceptance_criteria": "Returns id, memory stored in D1 and Vectorize",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F014",
+      "category": "memory",
+      "priority": 1,
+      "description": "POST /memory/recall retrieves relevant memories",
+      "acceptance_criteria": "Query returns semantically similar memories",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F015",
+      "category": "memory",
+      "priority": 1,
+      "description": "POST /memory/reflect summarizes memories",
+      "acceptance_criteria": "Creates compressed high-signal memories",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F016",
+      "category": "memory",
+      "priority": 1,
+      "description": "POST /memory/forget tombstones memory",
+      "acceptance_criteria": "Memory marked as deleted in D1",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F017",
+      "category": "security",
+      "priority": 1,
+      "description": "Memory policy blocks secret-like content",
+      "acceptance_criteria": "Attempting to store 'api key' or 'password' is rejected",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F018",
+      "category": "providers",
+      "priority": 1,
+      "description": "Workers AI provider functional",
+      "acceptance_criteria": "Brainstorm with workers_ai returns results",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F019",
+      "category": "providers",
+      "priority": 2,
+      "description": "Anthropic provider functional",
+      "acceptance_criteria": "With API key, Anthropic generates responses",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F020",
+      "category": "files",
+      "priority": 1,
+      "description": "All source files created per spec",
+      "acceptance_criteria": "src/worker.ts, src/core/*, src/memory/*, src/providers/*, src/pipelines/* exist",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F021",
+      "category": "files",
+      "priority": 1,
+      "description": "wrangler.jsonc has correct bindings",
+      "acceptance_criteria": "AI, DB, VEC, ARTIFACTS, KV bindings configured with real IDs",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F022",
+      "category": "files",
+      "priority": 1,
+      "description": "Prompt files exist in prompts/",
+      "acceptance_criteria": "BRAINSTORM.prompt.txt, SYNTHESIZE.prompt.txt, BOOTSTRAP.prompt.txt exist",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F023",
+      "category": "github",
+      "priority": 2,
+      "description": "GitHub repo created and code pushed",
+      "acceptance_criteria": "https://github.com/*/project-factory accessible",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F024",
+      "category": "integration",
+      "priority": 1,
+      "description": "Full pipeline smoke test passes",
+      "acceptance_criteria": "brainstorm -> synthesize -> bootstrap -> download flow works end-to-end",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    },
+    {
+      "id": "F025",
+      "category": "integration",
+      "priority": 1,
+      "description": "Memory roundtrip test passes",
+      "acceptance_criteria": "remember + recall returns the stored memory",
+      "passes": false,
+      "tested_at": null,
+      "notes": ""
+    }
+  ]
+}

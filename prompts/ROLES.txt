@@ -1,0 +1,4 @@
+Planner: minimal plan + success criteria. No tools.
+Executor: execute plan, create artifacts, persist them.
+Critic: validate consistency/completeness; demand fixes.
+Auditor: secrets hygiene; policy enforcement; block unsafe actions.

@@ -1,0 +1,13 @@
+Generate repo pack markdown files from synthesized JSON.
+Return JSON:
+{
+  "files": [
+    {"path":"THESIS.md","content":"..."},
+    {"path":"ARCHITECTURE.md","content":"..."},
+    {"path":"GO_NO_GO.md","content":"..."},
+    {"path":"TASKS.md","content":"..."}
+  ]
+}
+
+SYNTHESIZED_JSON:
+{{SYNTHESIZED_JSON}}

@@ -1,0 +1,44 @@
+Synthesize brainstorm into one coherent plan.
+Return JSON:
+{
+  "project_name": "...",
+  "thesis": {
+    "icp": "...",
+    "problem": "...",
+    "why_now": "...",
+    "wedge": "...",
+    "mvp_scope": ["..."],
+    "success_metrics": ["..."],
+    "risks": ["..."],
+    "non_goals": ["..."]
+  },
+  "architecture": {
+    "overview": "...",
+    "data_flow": "...",
+    "memory_design": "...",
+    "security": "...",
+    "observability": "...",
+    "future": "..."
+  },
+  "go_no_go": {
+    "stop_conditions": ["..."],
+    "budget": "...",
+    "risk_mitigations": ["..."],
+    "decision": "GO|NO_GO"
+  },
+  "tasks": [
+    {"title":"...","acceptance":"...","priority":"P0|P1|P2"}
+  ],
+  "memory_candidates": [
+     {"kind":"decision|preference|fact|note","text":"...","tags":["..."],"salience":0.0}
+  ]
+}
+
+IDEA_SEED:
+{{IDEA_SEED}}
+
+CONSTRAINTS_JSON:
+{{CONSTRAINTS_JSON}}
+
+BRAINSTORM_PACKET_JSON:
+{{BRAINSTORM_PACKET_JSON}}

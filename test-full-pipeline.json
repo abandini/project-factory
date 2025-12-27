@@ -1,0 +1,1 @@
+{"project_name":"cloudscaffold","idea_seed":"A CLI tool to quickly scaffold Cloudflare projects with best practices","constraints":{"stack":"cloudflare","priority":"simplicity"},"providers":["workers_ai"]}
