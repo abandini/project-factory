@@ -1,0 +1,45 @@
+# Project Factory UI - Progress Log
+
+## Project Overview
+- **Name:** project-factory-ui
+- **Description:** React/Vite frontend for Project Factory with full CRUD
+- **Backend API:** https://project-factory.bill-burkey.workers.dev
+- **Deployment Target:** Cloudflare Pages
+
+## Architecture Decisions
+- **Framework:** React 18 + Vite + TypeScript
+- **Styling:** Tailwind CSS
+- **Routing:** React Router v6
+- **State:** React Query for server state, useState for local
+- **Icons:** Lucide React
+- **Markdown:** react-markdown for rendering generated docs
+
+## Session Log
+
+---
+
+## Session: 2026-01-03
+
+**Agent:** Claude Opus 4.5
+**Feature working on:** F01 - Vite + React + TypeScript project scaffold
+
+### Work Completed
+- Created feature-list.json with 25 features
+- Created claude-progress.txt
+- Starting project scaffold
+
+### Technical Decisions
+- Using Vite for fast HMR and build
+- TypeScript strict mode
+- Tailwind for styling consistency with modern look
+
+### Next Steps
+1. Run npm create vite
+2. Configure TypeScript strict mode
+3. Install dependencies
+4. Verify dev server runs
+
+### Environment State
+- [ ] All tests passing
+- [ ] Dev server runs without errors
+- [ ] No uncommitted changes

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { Env, DEFAULT_USER_ID } from "./core/state";
-import { json, readJson, nowIso, renderTemplate } from "./core/util";
+import { json, readJson, nowIso, renderTemplate, handleCors } from "./core/util";
 import { d1Exec, d1First, r2PutText, r2ListPrefix, r2GetObject } from "./core/tools";
 import { recordArtifact } from "./core/artifacts";
 import { makeOrchestrator } from "./core/orchestrator";
@@ -75,6 +75,11 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     const orch = makeOrchestrator(env);
+
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      return handleCors();
+    }
 
     try {
       // Memory endpoints
@@ -385,6 +390,59 @@ export default {
           projects,
           pagination: { limit, offset, total }
         });
+      }
+
+      // PATCH /projects/:id — update project name
+      const patchMatch = url.pathname.match(/^\/projects\/([^/]+)$/);
+      if (patchMatch && req.method === "PATCH") {
+        const project_id = patchMatch[1];
+        const body = await readJson(req) as Record<string, unknown>;
+        const name = body.name as string;
+
+        if (!name?.trim()) {
+          return json({ ok: false, error: "name required" }, { status: 400 });
+        }
+
+        const project = await d1First(env, `SELECT id FROM projects WHERE id=?`, [project_id]);
+        if (!project) {
+          return json({ ok: false, error: "project not found" }, { status: 404 });
+        }
+
+        await d1Exec(env, `UPDATE projects SET name=?, updated_at=? WHERE id=?`, [name.trim(), nowIso(), project_id]);
+        return json({ ok: true });
+      }
+
+      // DELETE /projects/:id — delete project and all associated data
+      const deleteMatch = url.pathname.match(/^\/projects\/([^/]+)$/);
+      if (deleteMatch && req.method === "DELETE") {
+        const project_id = deleteMatch[1];
+
+        const project = await d1First(env, `SELECT id FROM projects WHERE id=?`, [project_id]);
+        if (!project) {
+          return json({ ok: false, error: "project not found" }, { status: 404 });
+        }
+
+        // Delete from R2 (artifacts)
+        const prefix = `projects/${project_id}/`;
+        const objs = await r2ListPrefix(env, prefix);
+        for (const obj of objs) {
+          await env.ARTIFACTS.delete(obj.key);
+        }
+
+        // Delete from Vectorize (memory vectors)
+        const memories = await env.DB.prepare(`SELECT id FROM memories WHERE project_id=?`).bind(project_id).all();
+        const memoryIds = (memories.results || []).map((m: { id: string }) => m.id);
+        if (memoryIds.length > 0) {
+          await env.VEC.deleteByIds(memoryIds);
+        }
+
+        // Delete from D1 tables
+        await d1Exec(env, `DELETE FROM artifacts WHERE project_id=?`, [project_id]);
+        await d1Exec(env, `DELETE FROM memories WHERE project_id=?`, [project_id]);
+        await d1Exec(env, `DELETE FROM runs WHERE project_id=?`, [project_id]);
+        await d1Exec(env, `DELETE FROM projects WHERE id=?`, [project_id]);
+
+        return json({ ok: true });
       }
 
       if (url.pathname === "/" && req.method === "GET") {

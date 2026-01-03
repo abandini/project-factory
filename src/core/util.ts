@@ -1,13 +1,24 @@
 export const nowIso = () => new Date().toISOString();
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export function json<T = unknown>(obj: T, init?: ResponseInit): Response {
   return new Response(JSON.stringify(obj, null, 2), {
     ...init,
     headers: {
       "content-type": "application/json; charset=utf-8",
+      ...corsHeaders,
       ...(init?.headers || {}),
     },
   });
+}
+
+export function handleCors(): Response {
+  return new Response(null, { status: 204, headers: corsHeaders });
 }
 
 export async function readJson(req: Request): Promise<unknown> {

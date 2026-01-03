@@ -1,0 +1,262 @@
+{
+  "project": "project-factory-ui",
+  "description": "React/Vite frontend for Project Factory with full CRUD",
+  "created_at": "2026-01-03T20:50:00Z",
+  "stats": {
+    "total": 25,
+    "passing": 0,
+    "failing": 25
+  },
+  "features": [
+    {
+      "id": "F01",
+      "category": "setup",
+      "priority": 1,
+      "description": "Vite + React + TypeScript project scaffold",
+      "acceptance_criteria": "npm run dev starts without errors, TypeScript strict mode enabled",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F02",
+      "category": "setup",
+      "priority": 1,
+      "description": "Tailwind CSS configured with design tokens",
+      "acceptance_criteria": "Tailwind classes work, custom colors defined",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F03",
+      "category": "setup",
+      "priority": 1,
+      "description": "React Router with route structure",
+      "acceptance_criteria": "Routes for /, /projects, /projects/:id, /projects/new work",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F04",
+      "category": "setup",
+      "priority": 1,
+      "description": "API client for project-factory backend",
+      "acceptance_criteria": "Typed fetch wrapper for all endpoints, error handling",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F05",
+      "category": "layout",
+      "priority": 1,
+      "description": "App shell with navigation",
+      "acceptance_criteria": "Header with logo, nav links, responsive sidebar",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F06",
+      "category": "list",
+      "priority": 1,
+      "description": "Projects list page with cards",
+      "acceptance_criteria": "Displays all projects from GET /projects, shows name/status/date",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F07",
+      "category": "list",
+      "priority": 2,
+      "description": "Status filter on projects list",
+      "acceptance_criteria": "Filter by brainstormed/synthesized/bootstrapped status",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F08",
+      "category": "list",
+      "priority": 2,
+      "description": "Pagination on projects list",
+      "acceptance_criteria": "Load more or page numbers, uses limit/offset params",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F09",
+      "category": "create",
+      "priority": 1,
+      "description": "New project form page",
+      "acceptance_criteria": "Form with idea_seed textarea, project_name input, submit button",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F10",
+      "category": "create",
+      "priority": 1,
+      "description": "Brainstorm step with provider selection",
+      "acceptance_criteria": "Checkboxes for providers, calls POST /brainstorm, shows loading",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F11",
+      "category": "create",
+      "priority": 1,
+      "description": "Synthesize step execution",
+      "acceptance_criteria": "Button to run synthesis, calls POST /synthesize, shows result",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F12",
+      "category": "create",
+      "priority": 1,
+      "description": "Bootstrap step execution",
+      "acceptance_criteria": "Button to bootstrap, calls POST /bootstrap, shows generated files",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F13",
+      "category": "create",
+      "priority": 1,
+      "description": "Pipeline progress indicator",
+      "acceptance_criteria": "Visual stepper showing brainstorm->synthesize->bootstrap progress",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F14",
+      "category": "detail",
+      "priority": 1,
+      "description": "Project detail page header",
+      "acceptance_criteria": "Shows project name, idea seed, status, created date",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F15",
+      "category": "detail",
+      "priority": 1,
+      "description": "Generated docs viewer (THESIS, ARCHITECTURE, etc)",
+      "acceptance_criteria": "Tabs or accordion showing each generated markdown file rendered",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F16",
+      "category": "detail",
+      "priority": 1,
+      "description": "Download button for tar.gz",
+      "acceptance_criteria": "Button calls POST /download and triggers browser download",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F17",
+      "category": "update",
+      "priority": 1,
+      "description": "Edit project name",
+      "acceptance_criteria": "Inline edit or modal to update project name, persists to backend",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F18",
+      "category": "update",
+      "priority": 2,
+      "description": "Re-run pipeline steps",
+      "acceptance_criteria": "Buttons to re-run brainstorm/synthesize/bootstrap on existing project",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F19",
+      "category": "delete",
+      "priority": 1,
+      "description": "Delete project with confirmation",
+      "acceptance_criteria": "Delete button shows confirm modal, calls DELETE endpoint, removes from list",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F20",
+      "category": "ux",
+      "priority": 2,
+      "description": "Loading states for all async operations",
+      "acceptance_criteria": "Spinners/skeletons shown during API calls",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F21",
+      "category": "ux",
+      "priority": 2,
+      "description": "Error states and toast notifications",
+      "acceptance_criteria": "API errors show toast, form validation errors shown inline",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F22",
+      "category": "ux",
+      "priority": 2,
+      "description": "Empty states",
+      "acceptance_criteria": "No projects shows helpful CTA, no docs shows pending message",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F23",
+      "category": "deploy",
+      "priority": 1,
+      "description": "Cloudflare Pages deployment config",
+      "acceptance_criteria": "wrangler.toml or pages config, builds and deploys successfully",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F24",
+      "category": "deploy",
+      "priority": 1,
+      "description": "CORS configured on backend for frontend origin",
+      "acceptance_criteria": "Frontend can call backend API without CORS errors",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    },
+    {
+      "id": "F25",
+      "category": "api",
+      "priority": 1,
+      "description": "Backend DELETE /projects/:id endpoint",
+      "acceptance_criteria": "Deletes project and associated data from D1/R2",
+      "passes": false,
+      "tested_at": null,
+      "notes": null
+    }
+  ]
+}
