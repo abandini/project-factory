@@ -352,6 +352,41 @@ export default {
         });
       }
 
+      // /projects — list all projects
+      if (url.pathname === "/projects" && req.method === "GET") {
+        const limit = parseInt(url.searchParams.get("limit") || "50", 10);
+        const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+        const status = url.searchParams.get("status"); // optional filter
+
+        let query = `SELECT id, name, idea_seed, status, created_at, updated_at FROM projects`;
+        const params: (string | number)[] = [];
+
+        if (status) {
+          query += ` WHERE status = ?`;
+          params.push(status);
+        }
+
+        query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        const result = await env.DB.prepare(query).bind(...params).all();
+        const projects = result.results || [];
+
+        // Get total count
+        let countQuery = `SELECT COUNT(*) as total FROM projects`;
+        if (status) {
+          countQuery += ` WHERE status = ?`;
+        }
+        const countResult = await env.DB.prepare(countQuery).bind(...(status ? [status] : [])).first<{ total: number }>();
+        const total = countResult?.total || 0;
+
+        return json({
+          ok: true,
+          projects,
+          pagination: { limit, offset, total }
+        });
+      }
+
       if (url.pathname === "/" && req.method === "GET") {
         return new Response("project-factory OK", { status: 200 });
       }
