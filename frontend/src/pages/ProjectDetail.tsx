@@ -17,10 +17,10 @@ import {
 } from 'lucide-react';
 
 const tabs = [
-  { id: 'thesis', label: 'Thesis', file: 'THESIS.md' },
-  { id: 'architecture', label: 'Architecture', file: 'ARCHITECTURE.md' },
-  { id: 'gonogo', label: 'Go/No-Go', file: 'GO_NO_GO.md' },
-  { id: 'tasks', label: 'Tasks', file: 'TASKS.md' },
+  { id: 'thesis', label: 'Thesis' },
+  { id: 'architecture', label: 'Architecture' },
+  { id: 'go_no_go', label: 'Go/No-Go' },
+  { id: 'tasks', label: 'Tasks' },
 ];
 
 export function ProjectDetail() {
@@ -49,56 +49,14 @@ export function ProjectDetail() {
     setError(null);
 
     try {
-      // Get project from list (we'll need a single project endpoint later)
-      const response = await api.getProjects({ limit: 100 });
-      const found = response.projects.find((p) => p.id === id);
-
-      if (!found) {
-        setError('Project not found');
-        return;
-      }
-
-      setProject(found);
-      setEditName(found.name);
-
-      // Download and extract docs if bootstrapped
-      if (found.status === 'bootstrapped') {
-        await loadDocs();
-      }
+      const response = await api.getProject(id);
+      setProject(response.project);
+      setEditName(response.project.name);
+      setDocs(response.docs || {});
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load project');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function loadDocs() {
-    if (!id) return;
-
-    try {
-      const blob = await api.download(id);
-      // For now, we'll show a placeholder - full extraction would need a tar library
-      // In a real app, you'd have a GET endpoint that returns the docs directly
-      setDocs({
-        thesis: 'Loading documentation...',
-        architecture: 'Loading documentation...',
-        gonogo: 'Loading documentation...',
-        tasks: 'Loading documentation...',
-      });
-
-      // Try to extract using the blob
-      // This is a simplified version - real implementation would parse the tar.gz
-      const text = await blob.text().catch(() => '');
-      if (text.includes('THESIS')) {
-        setDocs({
-          thesis: '# Project Documentation\n\nDownload the tar.gz to view full documentation.',
-          architecture: '# Architecture\n\nDownload the tar.gz to view full documentation.',
-          gonogo: '# Go/No-Go\n\nDownload the tar.gz to view full documentation.',
-          tasks: '# Tasks\n\nDownload the tar.gz to view full documentation.',
-        });
-      }
-    } catch {
-      // Docs not available yet
     }
   }
 
@@ -151,14 +109,16 @@ export function ProjectDetail() {
   }
 
   async function handleRerun(step: 'brainstorm' | 'synthesize' | 'bootstrap') {
-    if (!id) return;
+    if (!id || !project) return;
 
     setRerunning(step);
+    setError(null);
+
     try {
       if (step === 'brainstorm') {
         await api.brainstorm({
-          idea_seed: project?.idea_seed || '',
-          project_name: project?.name || '',
+          idea_seed: project.idea_seed,
+          project_name: project.name,
           project_id: id,
         });
       } else if (step === 'synthesize') {
@@ -166,6 +126,7 @@ export function ProjectDetail() {
       } else {
         await api.bootstrap(id);
       }
+      // Reload project to get updated status and docs
       await loadProject();
     } catch (err) {
       setError(err instanceof Error ? err.message : `${step} failed`);
@@ -182,7 +143,7 @@ export function ProjectDetail() {
     );
   }
 
-  if (error || !project) {
+  if (error && !project) {
     return (
       <div>
         <button
@@ -194,11 +155,15 @@ export function ProjectDetail() {
         </button>
         <div className="flex items-center gap-3 bg-red-900/30 border border-red-700 rounded-lg p-4">
           <AlertCircle className="w-5 h-5 text-red-400" />
-          <span className="text-red-300">{error || 'Project not found'}</span>
+          <span className="text-red-300">{error}</span>
         </div>
       </div>
     );
   }
+
+  if (!project) return null;
+
+  const hasAnyDocs = Object.keys(docs).length > 0;
 
   return (
     <div>
@@ -209,6 +174,17 @@ export function ProjectDetail() {
         <ArrowLeft className="w-5 h-5" />
         Back to Projects
       </button>
+
+      {/* Error banner */}
+      {error && (
+        <div className="flex items-center gap-3 bg-red-900/30 border border-red-700 rounded-lg p-4 mb-6">
+          <AlertCircle className="w-5 h-5 text-red-400" />
+          <span className="text-red-300">{error}</span>
+          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-300">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Header */}
       <div className="bg-slate-800 rounded-xl p-6 mb-6">
@@ -247,6 +223,13 @@ export function ProjectDetail() {
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                  project.status === 'bootstrapped' ? 'bg-green-600' :
+                  project.status === 'synthesized' ? 'bg-blue-600' :
+                  project.status === 'brainstormed' ? 'bg-amber-600' : 'bg-slate-600'
+                } text-white`}>
+                  {project.status}
+                </span>
               </div>
             )}
             <p className="text-slate-400 mt-2">{project.idea_seed}</p>
@@ -280,10 +263,10 @@ export function ProjectDetail() {
         {/* Re-run Pipeline */}
         <div className="flex items-center gap-2 pt-4 border-t border-slate-700">
           <span className="text-sm text-slate-400 mr-2">Re-run:</span>
-          {['brainstorm', 'synthesize', 'bootstrap'].map((step) => (
+          {(['brainstorm', 'synthesize', 'bootstrap'] as const).map((step) => (
             <button
               key={step}
-              onClick={() => handleRerun(step as 'brainstorm' | 'synthesize' | 'bootstrap')}
+              onClick={() => handleRerun(step)}
               disabled={rerunning !== null}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-sm text-white rounded-lg transition-colors"
             >
@@ -327,7 +310,7 @@ export function ProjectDetail() {
       )}
 
       {/* Docs Tabs */}
-      {project.status === 'bootstrapped' && (
+      {hasAnyDocs ? (
         <div className="bg-slate-800 rounded-xl overflow-hidden">
           <div className="flex border-b border-slate-700">
             {tabs.map((tab) => (
@@ -346,20 +329,28 @@ export function ProjectDetail() {
             ))}
           </div>
 
-          <div className="p-6 prose prose-invert max-w-none">
-            <ReactMarkdown>{docs[activeTab] || 'No documentation available'}</ReactMarkdown>
+          <div className="p-6 prose prose-invert prose-headings:text-white prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-white max-w-none">
+            <ReactMarkdown>
+              {docs[activeTab] || `No ${activeTab.replace('_', ' ')} documentation available.`}
+            </ReactMarkdown>
           </div>
         </div>
-      )}
-
-      {project.status !== 'bootstrapped' && (
+      ) : (
         <div className="bg-slate-800 rounded-xl p-6 text-center">
           <FileText className="w-12 h-12 text-slate-600 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-white mb-2">
             Documentation Not Ready
           </h2>
-          <p className="text-slate-400">
+          <p className="text-slate-400 mb-4">
             Run the full pipeline to generate project documentation.
+          </p>
+          <p className="text-sm text-slate-500">
+            Status: <span className="text-indigo-400">{project.status}</span>
+            {project.status !== 'bootstrapped' && (
+              <span className="ml-2">
+                → Click the re-run buttons above to continue the pipeline
+              </span>
+            )}
           </p>
         </div>
       )}

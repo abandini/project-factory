@@ -30,7 +30,18 @@ async function fetchApi<T>(
   return data as T;
 }
 
+export interface ProjectDetailResponse {
+  ok: boolean;
+  project: Project;
+  docs: Record<string, string>;
+}
+
 export const api = {
+  // Get single project with docs
+  async getProject(project_id: string): Promise<ProjectDetailResponse> {
+    return fetchApi<ProjectDetailResponse>(`/projects/${project_id}`);
+  },
+
   // List projects
   async getProjects(params?: {
     limit?: number;

@@ -328,6 +328,43 @@ export default {
         return json({ ok: true, project_id, stored, provider: out.provider });
       }
 
+      // GET /projects/:id — get single project with docs
+      const getProjectMatch = url.pathname.match(/^\/projects\/([^/]+)$/);
+      if (getProjectMatch && req.method === "GET") {
+        const project_id = getProjectMatch[1];
+
+        const project = await d1First<{
+          id: string;
+          name: string;
+          idea_seed: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        }>(env, `SELECT id, name, idea_seed, status, created_at, updated_at FROM projects WHERE id=?`, [project_id]);
+
+        if (!project) {
+          return json({ ok: false, error: "project not found" }, { status: 404 });
+        }
+
+        // Get docs from R2 if bootstrapped
+        const docs: Record<string, string> = {};
+        if (project.status === "bootstrapped") {
+          const prefix = `projects/${project_id}/repo-pack/`;
+          const objs = await r2ListPrefix(env, prefix);
+
+          for (const obj of objs) {
+            const r2Obj = await r2GetObject(env, obj.key);
+            if (r2Obj) {
+              const content = await r2Obj.text();
+              const filename = obj.key.replace(prefix, "").replace(".md", "").toLowerCase();
+              docs[filename] = content;
+            }
+          }
+        }
+
+        return json({ ok: true, project, docs });
+      }
+
       // /download — returns .tar.gz of repo-pack
       if (url.pathname === "/download" && req.method === "POST") {
         const body = await readJson(req) as Record<string, unknown>;
