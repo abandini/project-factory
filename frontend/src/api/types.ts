@@ -52,3 +52,54 @@ export interface ApiError {
   ok: false;
   error: string;
 }
+
+// Ideas (lightweight capture)
+export interface Idea {
+  id: string;
+  user_id: string;
+  title: string | null;
+  idea_seed: string;
+  notes: string | null;
+  status: 'draft' | 'processing' | 'converted';
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IdeaContext {
+  id: string;
+  kind: 'link' | 'note' | 'file' | 'screenshot';
+  content: string;
+  metadata_json: string | null;
+  created_at: string;
+}
+
+export interface IdeasResponse {
+  ok: boolean;
+  ideas: Idea[];
+  pagination: {
+    limit: number;
+    offset: number;
+    total: number;
+  };
+}
+
+export interface IdeaDetailResponse {
+  ok: boolean;
+  idea: Idea;
+  context: IdeaContext[];
+}
+
+export interface CreateIdeaResponse {
+  ok: boolean;
+  id: string;
+  status: string;
+}
+
+export interface ProcessIdeaResponse {
+  ok: boolean;
+  idea_id: string;
+  project_id: string;
+  status: string;
+  message: string;
+}

@@ -1,12 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Factory, FolderOpen, Plus, Sparkles } from 'lucide-react';
+import { Factory, FolderOpen, Plus, Sparkles, Lightbulb } from 'lucide-react';
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
   const navItems = [
-    { to: '/', icon: FolderOpen, label: 'Projects' },
-    { to: '/new', icon: Plus, label: 'New Project' },
+    { to: '/ideas', icon: Lightbulb, label: 'Ideas', color: 'text-amber-400' },
+    { to: '/', icon: FolderOpen, label: 'Projects', color: '' },
+    { to: '/new', icon: Plus, label: 'New Project', color: '' },
   ];
 
   return (
@@ -22,8 +23,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         <nav className="flex-1 p-4">
           <ul className="space-y-2">
-            {navItems.map(({ to, icon: Icon, label }) => {
-              const isActive = location.pathname === to;
+            {navItems.map(({ to, icon: Icon, label, color }) => {
+              const isActive = location.pathname === to ||
+                (to === '/ideas' && location.pathname.startsWith('/ideas'));
               return (
                 <li key={to}>
                   <Link
@@ -34,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className={`w-5 h-5 ${!isActive && color ? color : ''}`} />
                     {label}
                   </Link>
                 </li>

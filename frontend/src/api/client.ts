@@ -4,6 +4,11 @@ import type {
   BrainstormResponse,
   SynthesizeResponse,
   BootstrapResponse,
+  Idea,
+  IdeasResponse,
+  IdeaDetailResponse,
+  CreateIdeaResponse,
+  ProcessIdeaResponse,
 } from './types';
 
 const API_BASE = 'https://project-factory.bill-burkey.workers.dev';
@@ -121,6 +126,84 @@ export const api = {
       method: 'DELETE',
     });
   },
+
+  // ============ Ideas (lightweight capture) ============
+
+  // List ideas
+  async getIdeas(params?: {
+    limit?: number;
+    offset?: number;
+    status?: string;
+  }): Promise<IdeasResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.limit) searchParams.set('limit', String(params.limit));
+    if (params?.offset) searchParams.set('offset', String(params.offset));
+    if (params?.status) searchParams.set('status', params.status);
+
+    const query = searchParams.toString();
+    return fetchApi<IdeasResponse>(`/ideas${query ? `?${query}` : ''}`);
+  },
+
+  // Get single idea with context
+  async getIdea(idea_id: string): Promise<IdeaDetailResponse> {
+    return fetchApi<IdeaDetailResponse>(`/ideas/${idea_id}`);
+  },
+
+  // Create new idea (quick capture)
+  async createIdea(data: {
+    idea_seed: string;
+    title?: string;
+    notes?: string;
+  }): Promise<CreateIdeaResponse> {
+    return fetchApi<CreateIdeaResponse>('/ideas', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Add context to an idea
+  async addIdeaContext(
+    idea_id: string,
+    data: {
+      kind: 'link' | 'note' | 'file' | 'screenshot';
+      content: string;
+      metadata?: Record<string, unknown>;
+    }
+  ): Promise<{ ok: boolean; id: string; kind: string }> {
+    return fetchApi(`/ideas/${idea_id}/context`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Process idea into full project
+  async processIdea(
+    idea_id: string,
+    data?: { providers?: string[]; constraints?: Record<string, unknown> }
+  ): Promise<ProcessIdeaResponse> {
+    return fetchApi<ProcessIdeaResponse>(`/ideas/${idea_id}/process`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  },
+
+  // Update idea
+  async updateIdea(
+    idea_id: string,
+    data: { title?: string; idea_seed?: string; notes?: string }
+  ): Promise<{ ok: boolean }> {
+    return fetchApi<{ ok: boolean }>(`/ideas/${idea_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete idea
+  async deleteIdea(idea_id: string): Promise<{ ok: boolean }> {
+    return fetchApi<{ ok: boolean }>(`/ideas/${idea_id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
-export type { Project };
+export type { Project, Idea };

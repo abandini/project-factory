@@ -120,6 +120,281 @@ export default {
         return json({ ok: true });
       }
 
+      // ============ Ideas (lightweight capture) ============
+
+      // POST /ideas - Quick capture an idea without processing
+      if (url.pathname === "/ideas" && req.method === "POST") {
+        const body = await readJson(req) as Record<string, unknown>;
+        const user_id = userIdFrom(body);
+        const idea_seed = String(body.idea_seed || "");
+        if (!idea_seed) return json({ ok: false, error: "idea_seed required" }, { status: 400 });
+
+        const id = uuidv4();
+        const ts = nowIso();
+        const title = body.title ? String(body.title) : null;
+        const notes = body.notes ? String(body.notes) : null;
+
+        await d1Exec(
+          env,
+          `INSERT INTO ideas (id, user_id, title, idea_seed, notes, status, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, 'draft', ?, ?)`,
+          [id, user_id, title, idea_seed, notes, ts, ts]
+        );
+
+        return json({ ok: true, id, status: "draft" });
+      }
+
+      // GET /ideas - List all ideas
+      if (url.pathname === "/ideas" && req.method === "GET") {
+        const limit = parseInt(url.searchParams.get("limit") || "50", 10);
+        const offset = parseInt(url.searchParams.get("offset") || "0", 10);
+        const status = url.searchParams.get("status"); // optional filter
+
+        let query = `SELECT id, user_id, title, idea_seed, notes, status, project_id, created_at, updated_at FROM ideas`;
+        const params: (string | number)[] = [];
+
+        if (status) {
+          query += ` WHERE status = ?`;
+          params.push(status);
+        }
+
+        query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+        params.push(limit, offset);
+
+        const result = await env.DB.prepare(query).bind(...params).all();
+        const ideas = result.results || [];
+
+        // Get total count
+        let countQuery = `SELECT COUNT(*) as total FROM ideas`;
+        if (status) {
+          countQuery += ` WHERE status = ?`;
+        }
+        const countResult = await env.DB.prepare(countQuery).bind(...(status ? [status] : [])).first<{ total: number }>();
+        const total = countResult?.total || 0;
+
+        return json({
+          ok: true,
+          ideas,
+          pagination: { limit, offset, total }
+        });
+      }
+
+      // GET /ideas/:id - Get single idea with context
+      const getIdeaMatch = url.pathname.match(/^\/ideas\/([^/]+)$/);
+      if (getIdeaMatch && req.method === "GET") {
+        const idea_id = getIdeaMatch[1];
+
+        const idea = await d1First<{
+          id: string;
+          user_id: string;
+          title: string | null;
+          idea_seed: string;
+          notes: string | null;
+          status: string;
+          project_id: string | null;
+          created_at: string;
+          updated_at: string;
+        }>(env, `SELECT * FROM ideas WHERE id=?`, [idea_id]);
+
+        if (!idea) {
+          return json({ ok: false, error: "idea not found" }, { status: 404 });
+        }
+
+        // Get attached context
+        const contextResult = await env.DB.prepare(
+          `SELECT id, kind, content, metadata_json, created_at FROM idea_context WHERE idea_id=? ORDER BY created_at ASC`
+        ).bind(idea_id).all();
+        const context = contextResult.results || [];
+
+        return json({ ok: true, idea, context });
+      }
+
+      // POST /ideas/:id/context - Add context to an idea (links, notes, files)
+      const addContextMatch = url.pathname.match(/^\/ideas\/([^/]+)\/context$/);
+      if (addContextMatch && req.method === "POST") {
+        const idea_id = addContextMatch[1];
+        const body = await readJson(req) as Record<string, unknown>;
+
+        const idea = await d1First(env, `SELECT id FROM ideas WHERE id=?`, [idea_id]);
+        if (!idea) {
+          return json({ ok: false, error: "idea not found" }, { status: 404 });
+        }
+
+        const kind = String(body.kind || "note"); // link, note, file, screenshot
+        const content = String(body.content || "");
+        if (!content) return json({ ok: false, error: "content required" }, { status: 400 });
+
+        const metadata = body.metadata || null;
+        const id = uuidv4();
+        const ts = nowIso();
+
+        await d1Exec(
+          env,
+          `INSERT INTO idea_context (id, idea_id, kind, content, metadata_json, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [id, idea_id, kind, content, metadata ? JSON.stringify(metadata) : null, ts]
+        );
+
+        // Update idea's updated_at
+        await d1Exec(env, `UPDATE ideas SET updated_at=? WHERE id=?`, [ts, idea_id]);
+
+        return json({ ok: true, id, kind });
+      }
+
+      // POST /ideas/:id/process - Convert idea to full project and run pipeline
+      const processIdeaMatch = url.pathname.match(/^\/ideas\/([^/]+)\/process$/);
+      if (processIdeaMatch && req.method === "POST") {
+        const idea_id = processIdeaMatch[1];
+        const body = await readJson(req) as Record<string, unknown>;
+
+        const idea = await d1First<{
+          id: string;
+          user_id: string;
+          title: string | null;
+          idea_seed: string;
+          notes: string | null;
+          status: string;
+        }>(env, `SELECT * FROM ideas WHERE id=?`, [idea_id]);
+
+        if (!idea) {
+          return json({ ok: false, error: "idea not found" }, { status: 404 });
+        }
+
+        if (idea.status === "converted") {
+          return json({ ok: false, error: "idea already converted" }, { status: 400 });
+        }
+
+        // Get all context for the idea
+        const contextResult = await env.DB.prepare(
+          `SELECT kind, content, metadata_json FROM idea_context WHERE idea_id=? ORDER BY created_at ASC`
+        ).bind(idea_id).all();
+        const contextItems = contextResult.results || [];
+
+        // Build enhanced idea_seed with context
+        let enrichedSeed = idea.idea_seed;
+        if (idea.notes) {
+          enrichedSeed += `\n\nNotes: ${idea.notes}`;
+        }
+
+        const links: string[] = [];
+        const additionalNotes: string[] = [];
+        for (const c of contextItems as Array<{ kind: string; content: string; metadata_json?: string }>) {
+          if (c.kind === "link") {
+            links.push(c.content);
+          } else if (c.kind === "note") {
+            additionalNotes.push(c.content);
+          }
+        }
+
+        if (links.length > 0) {
+          enrichedSeed += `\n\nReference Links:\n${links.map(l => `- ${l}`).join("\n")}`;
+        }
+        if (additionalNotes.length > 0) {
+          enrichedSeed += `\n\nAdditional Context:\n${additionalNotes.map(n => `- ${n}`).join("\n")}`;
+        }
+
+        // Update idea status
+        await d1Exec(env, `UPDATE ideas SET status='processing', updated_at=? WHERE id=?`, [nowIso(), idea_id]);
+
+        // Create project
+        const project_name = idea.title || "untitled-project";
+        const constraints = body.constraints || {};
+        const project_id = await createProject(env, idea.user_id, project_name, enrichedSeed, constraints);
+
+        // Link idea to project
+        await d1Exec(env, `UPDATE ideas SET status='converted', project_id=?, updated_at=? WHERE id=?`, [project_id, nowIso(), idea_id]);
+
+        // Now run brainstorm (but don't block on full pipeline)
+        const providerNames = (body.providers as string[]) || ["workers_ai", "anthropic", "openai", "gemini", "grok"];
+        const started_at = nowIso();
+        const run_id = uuidv4();
+
+        const tpl = await getPrompt(env, "BRAINSTORM");
+        const prompt = renderTemplate(tpl, {
+          IDEA_SEED: enrichedSeed,
+          CONSTRAINTS_JSON: JSON.stringify(constraints),
+        });
+
+        const results = await brainstorm(env, { prompt, providerNames });
+
+        await updateProjectStatus(env, project_id, "brainstormed");
+        await logRun(env, {
+          id: run_id,
+          project_id,
+          kind: "brainstorm",
+          status: "ok",
+          input_json: { idea_seed: enrichedSeed, constraints, providers: providerNames, from_idea: idea_id },
+          output_json: { results },
+          started_at,
+          finished_at: nowIso(),
+        });
+
+        return json({
+          ok: true,
+          idea_id,
+          project_id,
+          status: "brainstormed",
+          message: "Idea converted to project and brainstormed. Run /synthesize and /bootstrap to complete."
+        });
+      }
+
+      // PATCH /ideas/:id - Update idea
+      const patchIdeaMatch = url.pathname.match(/^\/ideas\/([^/]+)$/);
+      if (patchIdeaMatch && req.method === "PATCH") {
+        const idea_id = patchIdeaMatch[1];
+        const body = await readJson(req) as Record<string, unknown>;
+
+        const idea = await d1First(env, `SELECT id, status FROM ideas WHERE id=?`, [idea_id]);
+        if (!idea) {
+          return json({ ok: false, error: "idea not found" }, { status: 404 });
+        }
+
+        const updates: string[] = [];
+        const params: (string | null)[] = [];
+
+        if (body.title !== undefined) {
+          updates.push("title=?");
+          params.push(body.title ? String(body.title) : null);
+        }
+        if (body.idea_seed !== undefined) {
+          updates.push("idea_seed=?");
+          params.push(String(body.idea_seed));
+        }
+        if (body.notes !== undefined) {
+          updates.push("notes=?");
+          params.push(body.notes ? String(body.notes) : null);
+        }
+
+        if (updates.length === 0) {
+          return json({ ok: false, error: "no updates provided" }, { status: 400 });
+        }
+
+        updates.push("updated_at=?");
+        params.push(nowIso());
+        params.push(idea_id);
+
+        await d1Exec(env, `UPDATE ideas SET ${updates.join(", ")} WHERE id=?`, params);
+        return json({ ok: true });
+      }
+
+      // DELETE /ideas/:id - Delete idea and its context
+      const deleteIdeaMatch = url.pathname.match(/^\/ideas\/([^/]+)$/);
+      if (deleteIdeaMatch && req.method === "DELETE") {
+        const idea_id = deleteIdeaMatch[1];
+
+        const idea = await d1First(env, `SELECT id FROM ideas WHERE id=?`, [idea_id]);
+        if (!idea) {
+          return json({ ok: false, error: "idea not found" }, { status: 404 });
+        }
+
+        await d1Exec(env, `DELETE FROM idea_context WHERE idea_id=?`, [idea_id]);
+        await d1Exec(env, `DELETE FROM ideas WHERE id=?`, [idea_id]);
+
+        return json({ ok: true });
+      }
+
+      // ============ Pipeline Endpoints ============
+
       // /brainstorm
       if (url.pathname === "/brainstorm" && req.method === "POST") {
         const body = await readJson(req) as Record<string, unknown>;
