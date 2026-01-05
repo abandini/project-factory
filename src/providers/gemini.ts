@@ -9,33 +9,47 @@ export const GeminiProvider: Provider = {
       return { provider: "gemini" as const, text: "GEMINI_NOT_CONFIGURED" };
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.4,
-          maxOutputTokens: 4096,
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`;
+
+      const resp = await fetch(url, {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "content-type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 2048,
+          },
+        }),
+      });
 
-    const raw = await resp.json().catch(() => ({})) as {
-      error?: { message?: string };
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
+      clearTimeout(timeoutId);
 
-    if (!resp.ok) {
-      const msg = raw?.error?.message || JSON.stringify(raw);
-      return { provider: "gemini" as const, text: `GEMINI_ERROR: ${msg}`, raw };
+      const raw = await resp.json().catch(() => ({})) as {
+        error?: { message?: string };
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      };
+
+      if (!resp.ok) {
+        const msg = raw?.error?.message || JSON.stringify(raw);
+        return { provider: "gemini" as const, text: `GEMINI_ERROR: ${msg}`, raw };
+      }
+
+      const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      return { provider: "gemini" as const, text: text || JSON.stringify(raw), raw };
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === "AbortError") {
+        return { provider: "gemini" as const, text: "GEMINI_TIMEOUT: Request took too long" };
+      }
+      return { provider: "gemini" as const, text: `GEMINI_ERROR: ${err}` };
     }
-
-    const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    return { provider: "gemini" as const, text: text || JSON.stringify(raw), raw };
   },
 };

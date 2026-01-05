@@ -9,31 +9,45 @@ export const OpenAIProvider: Provider = {
       return { provider: "openai" as const, text: "OPENAI_NOT_CONFIGURED" };
     }
 
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        max_tokens: 4096,
-        temperature: 0.4,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-    const raw = await resp.json().catch(() => ({})) as {
-      error?: { message?: string };
-      choices?: Array<{ message?: { content?: string } }>;
-    };
+    try {
+      const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "content-type": "application/json",
+          "Authorization": `Bearer ${env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          max_tokens: 2048,
+          temperature: 0.4,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
 
-    if (!resp.ok) {
-      const msg = raw?.error?.message || JSON.stringify(raw);
-      return { provider: "openai" as const, text: `OPENAI_ERROR: ${msg}`, raw };
+      clearTimeout(timeoutId);
+
+      const raw = await resp.json().catch(() => ({})) as {
+        error?: { message?: string };
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+
+      if (!resp.ok) {
+        const msg = raw?.error?.message || JSON.stringify(raw);
+        return { provider: "openai" as const, text: `OPENAI_ERROR: ${msg}`, raw };
+      }
+
+      const text = raw?.choices?.[0]?.message?.content || "";
+      return { provider: "openai" as const, text: text || JSON.stringify(raw), raw };
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === "AbortError") {
+        return { provider: "openai" as const, text: "OPENAI_TIMEOUT: Request took too long" };
+      }
+      return { provider: "openai" as const, text: `OPENAI_ERROR: ${err}` };
     }
-
-    const text = raw?.choices?.[0]?.message?.content || "";
-    return { provider: "openai" as const, text: text || JSON.stringify(raw), raw };
   },
 };

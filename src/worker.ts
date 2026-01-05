@@ -751,8 +751,9 @@ export default {
           await env.VEC.deleteByIds(memoryIds);
         }
 
-        // Delete from D1 tables
+        // Delete from D1 tables (order matters for foreign keys)
         await d1Exec(env, `DELETE FROM artifacts WHERE project_id=?`, [project_id]);
+        await d1Exec(env, `DELETE FROM memory_vectors WHERE project_id=?`, [project_id]);
         await d1Exec(env, `DELETE FROM memories WHERE project_id=?`, [project_id]);
         await d1Exec(env, `DELETE FROM runs WHERE project_id=?`, [project_id]);
         await d1Exec(env, `DELETE FROM projects WHERE id=?`, [project_id]);
