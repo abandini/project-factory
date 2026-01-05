@@ -305,7 +305,7 @@ export default {
         await d1Exec(env, `UPDATE ideas SET status='converted', project_id=?, updated_at=? WHERE id=?`, [project_id, nowIso(), idea_id]);
 
         // Now run brainstorm (but don't block on full pipeline)
-        const providerNames = (body.providers as string[]) || ["workers_ai", "anthropic", "openai", "gemini", "grok"];
+        const providerNames = (body.providers as string[]) || ["workers_ai", "anthropic", "openai", "gemini", "grok", "openrouter"];
         const started_at = nowIso();
         const run_id = uuidv4();
 
@@ -405,7 +405,7 @@ export default {
 
         const constraints = body.constraints || {};
         const project_name = String(body.project_name || "new-project");
-        const providerNames = (body.providers as string[]) || ["workers_ai", "anthropic", "openai", "gemini", "grok"];
+        const providerNames = (body.providers as string[]) || ["workers_ai", "anthropic", "openai", "gemini", "grok", "openrouter"];
 
         const project_id = (body.project_id as string) || (await createProject(env, user_id, project_name, idea_seed, constraints));
         const started_at = nowIso();
