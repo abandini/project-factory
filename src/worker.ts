@@ -640,31 +640,60 @@ export default {
         return json({ ok: true, project, docs });
       }
 
-      // /download — returns .tar.gz of repo-pack
+      // /download — returns combined markdown document
       if (url.pathname === "/download" && req.method === "POST") {
         const body = await readJson(req) as Record<string, unknown>;
         const project_id = String(body.project_id || "");
         if (!project_id) return json({ ok: false, error: "project_id required" }, { status: 400 });
 
+        // Get project info
+        const project = await d1First<{ name: string; idea_seed: string }>(
+          env,
+          `SELECT name, idea_seed FROM projects WHERE id=?`,
+          [project_id]
+        );
+        if (!project) return json({ ok: false, error: "project not found" }, { status: 404 });
+
         const prefix = `projects/${project_id}/repo-pack/`;
         const objs = await r2ListPrefix(env, prefix);
 
-        const files: Array<{ path: string; data: Uint8Array }> = [];
+        // Collect all markdown content
+        const docs: Record<string, string> = {};
         for (const o of objs) {
-          const key = o.key;
-          const relPath = key.replace(prefix, "");
-          const obj = await r2GetObject(env, key);
+          const obj = await r2GetObject(env, o.key);
           if (!obj) continue;
-          const ab = await obj.arrayBuffer();
-          files.push({ path: relPath, data: new Uint8Array(ab) });
+          const content = await obj.text();
+          const filename = o.key.replace(prefix, "").replace(".md", "").toUpperCase();
+          docs[filename] = content;
         }
 
-        const gzStream = await makeTarGz(files);
-        return new Response(gzStream, {
+        // Combine into single markdown document
+        const sections = ["THESIS", "ARCHITECTURE", "GO_NO_GO", "TASKS"];
+        let combined = `# ${project.name}\n\n`;
+        combined += `> ${project.idea_seed}\n\n`;
+        combined += `---\n\n`;
+
+        for (const section of sections) {
+          if (docs[section]) {
+            combined += docs[section];
+            combined += `\n\n---\n\n`;
+          }
+        }
+
+        // Add any other docs not in the standard sections
+        for (const [key, content] of Object.entries(docs)) {
+          if (!sections.includes(key)) {
+            combined += content;
+            combined += `\n\n---\n\n`;
+          }
+        }
+
+        const filename = project.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        return new Response(combined, {
           status: 200,
           headers: {
-            "content-type": "application/gzip",
-            "content-disposition": `attachment; filename=repo-pack-${project_id}.tar.gz`,
+            "content-type": "text/markdown; charset=utf-8",
+            "content-disposition": `attachment; filename=${filename}-project-pack.md`,
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",

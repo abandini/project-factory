@@ -69,7 +69,8 @@ export function ProjectDetail() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${project?.name || 'project'}.tar.gz`;
+      const filename = (project?.name || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      a.download = `${filename}-project-pack.md`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
