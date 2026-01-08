@@ -204,6 +204,31 @@ export const api = {
       method: 'DELETE',
     });
   },
+
+  // ============ Project Implementor Integration ============
+
+  // Build project - imports to project-implementor and starts first task
+  async buildProject(project_id: string): Promise<{
+    ok: boolean;
+    project_id: string;
+    name: string;
+    task_id?: string;
+    task_title?: string;
+    session_id?: string;
+    status: string;
+    message?: string;
+  }> {
+    const IMPLEMENTOR_BASE = 'https://project-implementor.bill-burkey.workers.dev';
+    const response = await fetch(`${IMPLEMENTOR_BASE}/build/${project_id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await response.json();
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.error || 'Build failed');
+    }
+    return data;
+  },
 };
 
 export type { Project, Idea };

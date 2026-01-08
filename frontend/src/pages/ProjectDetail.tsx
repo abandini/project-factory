@@ -14,6 +14,7 @@ import {
   Check,
   X,
   RefreshCw,
+  Rocket,
 } from 'lucide-react';
 
 const tabs = [
@@ -37,6 +38,11 @@ export function ProjectDetail() {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [rerunning, setRerunning] = useState<string | null>(null);
+  const [building, setBuilding] = useState(false);
+  const [buildResult, setBuildResult] = useState<{
+    session_id?: string;
+    task_title?: string;
+  } | null>(null);
 
   useEffect(() => {
     loadProject();
@@ -136,6 +142,26 @@ export function ProjectDetail() {
     }
   }
 
+  async function handleBuild() {
+    if (!id) return;
+
+    setBuilding(true);
+    setError(null);
+    setBuildResult(null);
+
+    try {
+      const result = await api.buildProject(id);
+      setBuildResult({
+        session_id: result.session_id,
+        task_title: result.task_title,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Build failed');
+    } finally {
+      setBuilding(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -182,6 +208,27 @@ export function ProjectDetail() {
           <AlertCircle className="w-5 h-5 text-red-400" />
           <span className="text-red-300">{error}</span>
           <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-300">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Build success banner */}
+      {buildResult && (
+        <div className="flex items-center gap-3 bg-green-900/30 border border-green-700 rounded-lg p-4 mb-6">
+          <Rocket className="w-5 h-5 text-green-400" />
+          <div className="flex-1">
+            <span className="text-green-300 font-medium">Agent started!</span>
+            {buildResult.task_title && (
+              <span className="text-green-400 ml-2">Working on: {buildResult.task_title}</span>
+            )}
+            {buildResult.session_id && (
+              <div className="text-green-500 text-sm mt-1">
+                Session: {buildResult.session_id.slice(0, 8)}...
+              </div>
+            )}
+          </div>
+          <button onClick={() => setBuildResult(null)} className="text-green-400 hover:text-green-300">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -238,18 +285,32 @@ export function ProjectDetail() {
 
           <div className="flex items-center gap-2">
             {project.status === 'bootstrapped' && (
-              <button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                {downloading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Download className="w-5 h-5" />
-                )}
-                Download
-              </button>
+              <>
+                <button
+                  onClick={handleBuild}
+                  disabled={building}
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  {building ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Rocket className="w-5 h-5" />
+                  )}
+                  Build It
+                </button>
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-700 text-white px-4 py-2 rounded-lg transition-colors"
+                >
+                  {downloading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
+                  Download
+                </button>
+              </>
             )}
             <button
               onClick={() => setShowDeleteConfirm(true)}
