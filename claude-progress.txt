@@ -19,9 +19,11 @@ A Cloudflare-first "idea → rigorous repo pack" factory with mem0-style memory.
 https://project-factory.bill-burkey.workers.dev
 
 ### Endpoints
+- POST /research (NEW - market validation, competitor analysis)
 - POST /brainstorm
 - POST /synthesize
-- POST /bootstrap
+- POST /critique (NEW - Socratic interrogation of PRD)
+- POST /bootstrap (UPDATED - generates 9 files)
 - POST /download
 - POST /memory/remember
 - POST /memory/recall
@@ -116,3 +118,88 @@ https://project-factory.bill-burkey.workers.dev
 
 ### QA Status: APPROVED
 All endpoints tested and verified working.
+
+---
+
+## Session: 2026-01-09 (Session 3 - Enhanced Pipeline)
+
+**Agent:** Claude Opus 4.5
+**Feature working on:** F026-F040 (Enhanced Pipeline with Socratic Method)
+
+### Enhancement Overview
+Implementing "professional vibe-coding" workflow with:
+1. **RESEARCH** - Market validation, competitor analysis, feasibility
+2. **CRITIQUE** - Socratic interrogation of PRD (new stage)
+3. **Agent Config** - Generate .cursorrules, AGENTS.md, CLAUDE.md
+4. **Contract Enforcement** - Validate agent output against EARS specs
+
+### New Pipeline Flow
+```
+idea_seed → RESEARCH → BRAINSTORM → SYNTHESIZE → CRITIQUE → BOOTSTRAP
+                                                              ↓
+                                                    9 files including:
+                                                    - .cursorrules
+                                                    - AGENTS.md
+                                                    - CLAUDE.md
+```
+
+### Work Completed
+- [x] F026: RESEARCH.prompt.txt - Created with market/competitor/feasibility focus
+- [x] F027: POST /research endpoint - Returns verdict (GO/CAUTION/NO_GO) with detailed analysis
+- [x] F028: Project status 'researched' state - Pipeline flow updated
+- [x] F029: CRITIQUE.prompt.txt - Implements Socratic method (why-chains, inversions)
+- [x] F030: POST /critique endpoint - Returns edge_cases, blind_spots, recommendations
+- [x] F031: Critique refinement suggestions - spec_refinements with EARS corrections
+- [x] F032-F034: Agent config file generation - .cursorrules, AGENTS.md, CLAUDE.md
+- [ ] F035: POST /validate endpoint - P2 priority, deferred
+- [x] F036: BOOTSTRAP.prompt.txt 9-file output - Updated for 9 files
+- [x] F037: New prompts uploaded to KV - RESEARCH, CRITIQUE, BOOTSTRAP
+- [x] F038: Enhanced pipeline smoke test - Full pipeline verified
+
+### Files Created
+- prompts/RESEARCH.prompt.txt
+- prompts/CRITIQUE.prompt.txt
+- src/pipelines/research.ts
+- src/pipelines/critique.ts
+
+### Files Modified
+- prompts/BOOTSTRAP.prompt.txt (9-file output)
+- src/worker.ts (added /research and /critique endpoints)
+
+### Technical Decisions
+- OpenRouter with Claude Sonnet for all enhanced pipeline stages (32768 max_tokens)
+- Socratic interrogation implemented with why-chains and inversions
+- Agent config files follow established patterns from ~/.claude/skills/
+
+### Test Results
+- /research: Returned CAUTION verdict with detailed market analysis for dev-tasks
+- /critique: Returned clarity_score=8, completeness_score=7, 12 ambiguities identified
+- /bootstrap: Successfully generated all 9 files
+
+### Feature Status
+- Total: 40 features
+- Passing: 38 features (95%)
+- Remaining (P2): F035 (/validate), F039 (quality metrics)
+
+### Environment State
+- [x] All tests passing
+- [x] Dev server runs without errors
+- [x] No uncommitted changes (pending commit)
+- [x] Database migrations applied
+
+---
+
+## Session: 2026-01-11 (Session 4 - Finalization)
+
+**Agent:** Claude Opus 4.5
+**Feature working on:** Session finalization and git commit
+
+### Work Completed
+- Updated feature-list.json with all test results
+- Updated claude-progress.txt with session notes
+- Ready for git commit
+
+### Next Session Should
+1. Consider implementing F035 (/validate endpoint) for contract enforcement
+2. Build project-factory-ui for visual pipeline management
+3. Integrate with project-implementor for automated implementation

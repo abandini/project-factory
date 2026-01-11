@@ -1,43 +1,25 @@
 import { Env } from "../core/state";
-import { WorkersAIProvider } from "../providers/workers_ai";
 import { AnthropicProvider } from "../providers/anthropic";
 import { OpenRouterProvider } from "../providers/openrouter";
+import { WorkersAIProvider } from "../providers/workers_ai";
 import { ProviderName } from "../providers/provider";
 
 function extractJson(text: string): string {
-  // The content may have nested code blocks (like mermaid diagrams), so we need
-  // to find the OUTER code fence, not use non-greedy matching which stops early.
-
   // Look for ```json at the start, then find the LAST ``` that closes it
   const jsonStart = text.indexOf('```json');
   if (jsonStart !== -1) {
     const contentStart = text.indexOf('\n', jsonStart) + 1;
-    // Find the last ``` that ends the block (looking for newline before it)
     const lastFence = text.lastIndexOf('\n```');
     if (lastFence > contentStart) {
       return text.substring(contentStart, lastFence).trim();
     }
-    // Try without newline prefix
     const lastFence2 = text.lastIndexOf('```');
     if (lastFence2 > contentStart) {
       return text.substring(contentStart, lastFence2).trim();
     }
   }
 
-  // Try generic ``` block
-  const codeStart = text.indexOf('```\n');
-  if (codeStart !== -1) {
-    const contentStart = codeStart + 4;
-    const lastFence = text.lastIndexOf('\n```');
-    if (lastFence > contentStart) {
-      const content = text.substring(contentStart, lastFence).trim();
-      if (content.startsWith('{')) {
-        return content;
-      }
-    }
-  }
-
-  // Fallback: find raw JSON object (first { to last })
+  // Fallback: find raw JSON object
   const firstBrace = text.indexOf('{');
   const lastBrace = text.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace > firstBrace) {
@@ -47,7 +29,8 @@ function extractJson(text: string): string {
   return text;
 }
 
-export async function bootstrapRepo(env: Env, prompt: string, prefer: "anthropic" | "workers_ai" | "openrouter" = "workers_ai") {
+export async function research(env: Env, prompt: string, prefer: "anthropic" | "openrouter" | "workers_ai" = "openrouter") {
+  // Research requires careful analysis - use a high-quality provider
   let provider;
   if (prefer === "openrouter" && OpenRouterProvider.isConfigured(env)) {
     provider = OpenRouterProvider;
@@ -56,6 +39,7 @@ export async function bootstrapRepo(env: Env, prompt: string, prefer: "anthropic
   } else {
     provider = WorkersAIProvider;
   }
+
   const r = await provider.generate(env, prompt);
 
   let obj: unknown = null;
@@ -63,7 +47,8 @@ export async function bootstrapRepo(env: Env, prompt: string, prefer: "anthropic
     const jsonText = extractJson(r.text);
     obj = JSON.parse(jsonText);
   } catch {
-    obj = { error: "BOOTSTRAP_JSON_PARSE_FAILED", raw: r.text, provider: r.provider };
+    obj = { error: "RESEARCH_JSON_PARSE_FAILED", raw: r.text, provider: r.provider };
   }
+
   return { provider: r.provider as ProviderName, rawText: r.text, json: obj };
 }

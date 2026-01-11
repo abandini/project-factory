@@ -1,44 +1,264 @@
-Synthesize brainstorm into one coherent plan.
-Return JSON:
+You are a principal engineer synthesizing brainstorm results into a comprehensive project specification.
+
+Your output will be used by an autonomous AI agent (Claude Code) to actually build this project. The specification must be detailed enough that an engineer could implement it without asking questions.
+
+## CRITICAL REQUIREMENTS
+
+1. **Cloudflare-Native Architecture**: The project MUST be built on Cloudflare's platform:
+   - **Workers**: All backend logic runs on Workers
+   - **D1**: Primary database (SQLite) - design the actual schema
+   - **R2**: Object storage - specify bucket structure
+   - **KV**: Caching, sessions, config - specify key patterns
+   - **Vectorize**: Vector search - specify indexes and embedding strategy
+   - **Workers AI**: Specify models for each use case
+   - **Durable Objects**: Only if real-time/stateful coordination needed
+   - **Queues**: Only if async processing needed
+   - **Secrets**: All API keys via `wrangler secret`
+
+2. **EARS Specifications**: Every requirement uses EARS notation:
+   - `WHEN [trigger] THE SYSTEM SHALL [response]` (event-driven)
+   - `IF [condition] THEN THE SYSTEM SHALL [response]` (conditional)
+   - `THE SYSTEM SHALL [behavior]` (unconditional)
+   - `WHILE [state] THE SYSTEM SHALL [behavior]` (state-driven)
+
+3. **Testable Requirements**: Every spec must be verifiable.
+
+4. **No Placeholders**: Every field must contain real, specific content.
+
+## OUTPUT FORMAT
+
+Return a JSON object with this EXACT structure:
+
+```json
 {
-  "project_name": "...",
+  "project_name": "kebab-case-name",
   "thesis": {
-    "icp": "...",
-    "problem": "...",
-    "why_now": "...",
-    "wedge": "...",
-    "mvp_scope": ["..."],
-    "success_metrics": ["..."],
-    "risks": ["..."],
-    "non_goals": ["..."]
+    "one_liner": "Single sentence describing what this is",
+    "problem_statement": "2-3 sentences on the specific problem being solved",
+    "target_user": {
+      "primary": "Primary user persona with context",
+      "secondary": "Secondary users if any"
+    },
+    "value_proposition": "Why this is valuable - be specific",
+    "why_now": "Why build this now? Market timing, tech enablers, etc.",
+    "wedge": "Initial use case that gets foot in door",
+    "success_metrics": [
+      {"metric": "Specific measurable outcome", "target": "Numeric target", "timeframe": "When"}
+    ],
+    "risks": [
+      {"risk": "Specific risk", "severity": "high|medium|low", "mitigation": "How to address"}
+    ],
+    "non_goals": ["What this project explicitly will NOT do"]
   },
   "architecture": {
-    "overview": "...",
-    "data_flow": "...",
-    "memory_design": "...",
-    "security": "...",
-    "observability": "...",
-    "future": "..."
+    "overview": "2-3 paragraph technical overview of how the system works",
+    "system_diagram": "ASCII art or mermaid diagram of component relationships",
+    "cloudflare_services": {
+      "workers": {
+        "main_worker": "Primary worker purpose and responsibilities",
+        "additional_workers": ["Other workers if needed"]
+      },
+      "d1": {
+        "database_name": "name-of-db",
+        "tables": [
+          {
+            "name": "table_name",
+            "purpose": "What this table stores",
+            "columns": [
+              {"name": "id", "type": "TEXT", "constraints": "PRIMARY KEY"},
+              {"name": "column_name", "type": "TYPE", "constraints": "NOT NULL, etc"}
+            ],
+            "indexes": ["idx_name ON table(column)"]
+          }
+        ]
+      },
+      "r2": {
+        "bucket_name": "bucket-name",
+        "structure": {
+          "prefix/pattern": "What gets stored here"
+        }
+      },
+      "kv": {
+        "namespace_name": "namespace-name",
+        "key_patterns": {
+          "pattern:*": "What this key pattern stores"
+        }
+      },
+      "vectorize": {
+        "index_name": "index-name",
+        "dimensions": 768,
+        "metric": "cosine",
+        "use_case": "What needs vector search"
+      },
+      "workers_ai": {
+        "models": [
+          {"model": "@cf/meta/llama-3.1-70b-instruct", "use_case": "What it's used for"},
+          {"model": "@cf/baai/bge-base-en-v1.5", "use_case": "Embeddings for..."}
+        ]
+      },
+      "durable_objects": {
+        "needed": false,
+        "classes": [],
+        "rationale": "Why or why not"
+      },
+      "queues": {
+        "needed": false,
+        "queues": [],
+        "rationale": "Why or why not"
+      }
+    },
+    "external_services": [
+      {"service": "Anthropic API", "purpose": "Why needed if Workers AI isn't sufficient", "secret_name": "ANTHROPIC_API_KEY"}
+    ],
+    "api_design": {
+      "base_url": "https://project-name.account.workers.dev",
+      "auth": {
+        "method": "JWT|API_KEY|OAuth",
+        "implementation": "How auth is implemented"
+      },
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/endpoint",
+          "purpose": "What it does",
+          "request_body": {"field": "type"},
+          "response": {"field": "type"},
+          "auth_required": true
+        }
+      ]
+    },
+    "data_flow": "Step-by-step description of how data flows through the system",
+    "security": {
+      "authentication": "How users authenticate",
+      "authorization": "How permissions work",
+      "secrets_management": "All secrets via wrangler secret put",
+      "rate_limiting": "Rate limit strategy",
+      "input_validation": "How inputs are validated"
+    },
+    "observability": {
+      "logging": "What gets logged",
+      "metrics": "Key metrics to track",
+      "error_handling": "How errors are handled and reported"
+    }
   },
   "go_no_go": {
-    "stop_conditions": ["..."],
-    "budget": "...",
-    "risk_mitigations": ["..."],
-    "decision": "GO|NO_GO"
+    "go_criteria": [
+      "Specific criterion that must be true to proceed"
+    ],
+    "stop_conditions": [
+      "Conditions that would halt the project"
+    ],
+    "budget": {
+      "estimated_cloudflare_cost": "$X/month at Y scale",
+      "external_api_costs": "$X/month estimate",
+      "development_effort": "X person-weeks"
+    },
+    "technical_feasibility": {
+      "proven_patterns": ["What parts use proven approaches"],
+      "novel_risks": ["What parts are experimental"]
+    },
+    "decision": "GO",
+    "rationale": "Why this is ready to build"
   },
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Foundation",
+      "description": "What this phase accomplishes",
+      "duration": "1-2 weeks",
+      "deliverables": ["Concrete deliverable"],
+      "depends_on": []
+    },
+    {
+      "id": "phase-2",
+      "name": "Core Features",
+      "description": "What this phase accomplishes",
+      "duration": "2-3 weeks",
+      "deliverables": ["Concrete deliverable"],
+      "depends_on": ["phase-1"]
+    }
+  ],
+  "specs": [
+    {
+      "id": "SPEC-001",
+      "category": "infrastructure",
+      "ears": "THE SYSTEM SHALL deploy as a Cloudflare Worker with D1, R2, KV, and Vectorize bindings",
+      "rationale": "Foundation for all functionality",
+      "phase": "phase-1",
+      "testable": true,
+      "verification": "wrangler deploy succeeds and health endpoint returns 200"
+    },
+    {
+      "id": "SPEC-002",
+      "category": "api",
+      "ears": "WHEN a POST request is made to /resource THE SYSTEM SHALL validate input, store in D1, and return the created resource",
+      "rationale": "Core CRUD functionality",
+      "phase": "phase-1",
+      "testable": true,
+      "verification": "API returns 201 with valid payload, 400 with invalid"
+    }
+  ],
   "tasks": [
-    {"title":"...","acceptance":"...","priority":"P0|P1|P2"}
+    {
+      "id": "TASK-001",
+      "title": "Initialize Cloudflare project structure",
+      "description": "Create wrangler.toml with D1, R2, KV, Vectorize bindings. Set up TypeScript config. Create src/worker.ts entry point.",
+      "type": "infra",
+      "phase": "phase-1",
+      "specs": ["SPEC-001"],
+      "acceptance_criteria": [
+        "wrangler.toml exists with all bindings configured",
+        "npm run dev starts local development server",
+        "TypeScript compiles without errors"
+      ],
+      "priority": "P0",
+      "estimated_complexity": "simple"
+    },
+    {
+      "id": "TASK-002",
+      "title": "Create D1 database schema",
+      "description": "Write SQL migrations for all tables defined in architecture. Apply to D1.",
+      "type": "infra",
+      "phase": "phase-1",
+      "specs": ["SPEC-001"],
+      "acceptance_criteria": [
+        "sql/001_schema.sql exists with all tables",
+        "wrangler d1 migrations apply succeeds",
+        "Tables queryable via D1 console"
+      ],
+      "priority": "P0",
+      "estimated_complexity": "simple"
+    }
   ],
   "memory_candidates": [
-     {"kind":"decision|preference|fact|note","text":"...","tags":["..."],"salience":0.0}
+    {
+      "kind": "decision",
+      "text": "Specific architectural decision made and why",
+      "tags": ["architecture", "cloudflare"],
+      "salience": 0.9
+    }
   ]
 }
+```
 
-IDEA_SEED:
+## INPUT DATA
+
+### IDEA SEED
 {{IDEA_SEED}}
 
-CONSTRAINTS_JSON:
+### CONSTRAINTS
 {{CONSTRAINTS_JSON}}
 
-BRAINSTORM_PACKET_JSON:
+### BRAINSTORM RESULTS
 {{BRAINSTORM_PACKET_JSON}}
+
+## INSTRUCTIONS
+
+1. Synthesize the brainstorm results into a coherent, buildable specification
+2. Design the ACTUAL D1 schema - real table names, columns, types
+3. Define the ACTUAL API endpoints - real paths, methods, payloads
+4. Write REAL EARS specs - not examples, actual requirements for THIS project
+5. Create REAL tasks - specific to THIS project, not generic templates
+6. Every field must contain substantive content - NO PLACEHOLDERS
+
+The autonomous agent will use this specification to build the project. Make it complete.

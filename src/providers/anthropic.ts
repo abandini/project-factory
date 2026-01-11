@@ -10,9 +10,9 @@ export const AnthropicProvider: Provider = {
       return { provider: "anthropic" as const, text: "ANTHROPIC_NOT_CONFIGURED" };
     }
 
-    // Use AbortController for timeout (55s - synthesis prompts can be complex)
+    // Use AbortController for timeout (180s - synthesis/bootstrap prompts can be very large)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 55000);
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
 
     try {
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
@@ -26,7 +26,7 @@ export const AnthropicProvider: Provider = {
         body: JSON.stringify({
           // Use Claude Sonnet 4 (Claude 3 is being deprecated)
           model: "claude-sonnet-4-20250514",
-          max_tokens: 4096,
+          max_tokens: 16384,  // Increased for EARS specs + tasks generation
           temperature: 0.4,
           messages: [{ role: "user", content: prompt }],
         }),

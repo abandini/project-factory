@@ -6,8 +6,10 @@ import { recordArtifact } from "./core/artifacts";
 import { makeOrchestrator } from "./core/orchestrator";
 import { makeTarGz } from "./core/tar";
 
+import { research } from "./pipelines/research";
 import { brainstorm } from "./pipelines/brainstorm";
 import { synthesize } from "./pipelines/synthesize";
+import { critique } from "./pipelines/critique";
 import { bootstrapRepo } from "./pipelines/bootstrap_repo";
 
 import { remember, recall, forget, MemoryItem } from "./memory/memory";
@@ -16,8 +18,10 @@ import { reflect } from "./memory/reflect";
 async function getPrompt(env: Env, name: string): Promise<string> {
   const kv = await env.KV.get(`prompts:${name}`);
   if (kv) return kv;
+  if (name === "RESEARCH") return "Return JSON with market_analysis, competitors, technical_feasibility, recommendations.";
   if (name === "BRAINSTORM") return "Return JSON brainstorm. IDEA_SEED={{IDEA_SEED}} CONSTRAINTS_JSON={{CONSTRAINTS_JSON}}";
   if (name === "SYNTHESIZE") return "Return JSON with thesis, architecture, go_no_go, tasks, memory_candidates.";
+  if (name === "CRITIQUE") return "Return JSON with edge_cases, blind_spots, questions, revised_specs, recommendations.";
   if (name === "BOOTSTRAP") return "Return JSON with files: [{path,content}].";
   return "";
 }
@@ -395,19 +399,114 @@ export default {
 
       // ============ Pipeline Endpoints ============
 
+      // /research - NEW: Market validation, competitor analysis, feasibility assessment
+      if (url.pathname === "/research" && req.method === "POST") {
+        const body = await readJson(req) as Record<string, unknown>;
+        const user_id = userIdFrom(body);
+
+        let idea_seed = String(body.idea_seed || "");
+        let constraints = body.constraints || {};
+        let project_name = String(body.project_name || "new-project");
+        let project_id = body.project_id as string | undefined;
+
+        // If project_id provided, fetch idea_seed from project (for re-runs)
+        if (project_id && !idea_seed) {
+          const existingProject = await d1First<{ idea_seed: string; name: string; constraints_json: string }>(
+            env, `SELECT idea_seed, name, constraints_json FROM projects WHERE id=?`, [project_id]
+          );
+          if (existingProject) {
+            idea_seed = existingProject.idea_seed;
+            project_name = existingProject.name;
+            constraints = JSON.parse(existingProject.constraints_json || "{}");
+          }
+        }
+
+        if (!idea_seed) return json({ ok: false, error: "idea_seed required" }, { status: 400 });
+
+        // Create project if new
+        if (!project_id) {
+          project_id = await createProject(env, user_id, project_name, idea_seed, constraints);
+        }
+
+        const started_at = nowIso();
+        const run_id = uuidv4();
+
+        const tpl = await getPrompt(env, "RESEARCH");
+        const prompt = renderTemplate(tpl, {
+          IDEA_SEED: idea_seed,
+          CONSTRAINTS: JSON.stringify(constraints),
+        });
+
+        const out = await research(env, prompt, "openrouter");
+
+        const researchJson = out.json as { error?: string; executive_summary?: { verdict?: string } } | null;
+        const hasError = researchJson?.error;
+        const verdict = researchJson?.executive_summary?.verdict || "UNKNOWN";
+
+        await updateProjectStatus(env, project_id, "researched");
+        await logRun(env, {
+          id: run_id,
+          project_id,
+          kind: "research",
+          status: hasError ? "error" : "ok",
+          input_json: { idea_seed, constraints },
+          output_json: { research: out.json, raw: out.rawText, provider: out.provider },
+          error_text: hasError ? String(researchJson?.error) : undefined,
+          started_at,
+          finished_at: nowIso(),
+        });
+
+        // Store research insights as memories
+        if (!hasError && researchJson) {
+          await remember(env, {
+            user_id,
+            project_id,
+            kind: "fact",
+            text: `Research verdict: ${verdict}. ${researchJson?.executive_summary?.one_liner || ""}`,
+            tags: ["research", "verdict", verdict.toLowerCase()],
+            salience: 0.9,
+            source: "agent",
+          });
+        }
+
+        return json({
+          ok: !hasError,
+          project_id,
+          verdict,
+          research: out.json,
+          provider: out.provider,
+        });
+      }
+
       // /brainstorm
       if (url.pathname === "/brainstorm" && req.method === "POST") {
         const body = await readJson(req) as Record<string, unknown>;
         const user_id = userIdFrom(body);
 
-        const idea_seed = String(body.idea_seed || "");
+        let idea_seed = String(body.idea_seed || "");
+        let constraints = body.constraints || {};
+        let project_name = String(body.project_name || "new-project");
+        let project_id = body.project_id as string | undefined;
+
+        // If project_id provided, fetch idea_seed from project (for re-runs)
+        if (project_id && !idea_seed) {
+          const existingProject = await d1First<{ idea_seed: string; name: string; constraints_json: string }>(
+            env, `SELECT idea_seed, name, constraints_json FROM projects WHERE id=?`, [project_id]
+          );
+          if (existingProject) {
+            idea_seed = existingProject.idea_seed;
+            project_name = existingProject.name;
+            constraints = JSON.parse(existingProject.constraints_json || "{}");
+          }
+        }
+
         if (!idea_seed) return json({ ok: false, error: "idea_seed required" }, { status: 400 });
 
-        const constraints = body.constraints || {};
-        const project_name = String(body.project_name || "new-project");
-        const providerNames = (body.providers as string[]) || ["workers_ai", "anthropic", "openai", "gemini", "grok", "openrouter"];
+        const providerNames = (body.providers as string[]) || ["anthropic", "workers_ai"];
 
-        const project_id = (body.project_id as string) || (await createProject(env, user_id, project_name, idea_seed, constraints));
+        if (!project_id) {
+          project_id = await createProject(env, user_id, project_name, idea_seed, constraints);
+        }
         const started_at = nowIso();
         const run_id = uuidv4();
 
@@ -520,6 +619,93 @@ export default {
         return json({ ok: true, project_id, synthesized: out.json, raw: out.rawText, provider: out.provider });
       }
 
+      // /critique - NEW: Socratic interrogation of PRD
+      if (url.pathname === "/critique" && req.method === "POST") {
+        const body = await readJson(req) as Record<string, unknown>;
+        const user_id = userIdFrom(body);
+        const project_id = String(body.project_id || "");
+        if (!project_id) return json({ ok: false, error: "project_id required" }, { status: 400 });
+
+        // Get the synthesized output to critique
+        const runs = await env.DB.prepare(
+          `SELECT * FROM runs WHERE project_id=? AND kind='synthesize' ORDER BY started_at DESC LIMIT 1`
+        )
+          .bind(project_id)
+          .all();
+
+        const last = runs.results?.[0] as { output_json?: string } | undefined;
+        if (!last?.output_json) return json({ ok: false, error: "No synthesis found. Run /synthesize first." }, { status: 400 });
+
+        const synthObj = JSON.parse(last.output_json) as { json?: unknown };
+        const synthesized = synthObj?.json ?? synthObj;
+
+        const started_at = nowIso();
+        const run_id = uuidv4();
+
+        const tpl = await getPrompt(env, "CRITIQUE");
+        const prompt = renderTemplate(tpl, {
+          SYNTHESIZED_JSON: JSON.stringify(synthesized, null, 2),
+        });
+
+        const out = await critique(env, prompt, "openrouter");
+
+        const critiqueJson = out.json as {
+          error?: string;
+          overall_assessment?: { clarity_score?: number; completeness_score?: number };
+          recommendations?: { proceed?: boolean; blocking_issues?: string[] };
+        } | null;
+        const hasError = critiqueJson?.error;
+
+        await updateProjectStatus(env, project_id, "critiqued");
+        await logRun(env, {
+          id: run_id,
+          project_id,
+          kind: "critique",
+          status: hasError ? "error" : "ok",
+          input_json: { synthesized_ref: last },
+          output_json: { critique: out.json, raw: out.rawText, provider: out.provider },
+          error_text: hasError ? String(critiqueJson?.error) : undefined,
+          started_at,
+          finished_at: nowIso(),
+        });
+
+        // Store critical findings as memories
+        if (!hasError && critiqueJson) {
+          const blockingIssues = critiqueJson?.recommendations?.blocking_issues || [];
+          if (blockingIssues.length > 0) {
+            await remember(env, {
+              user_id,
+              project_id,
+              kind: "warning",
+              text: `Critique identified ${blockingIssues.length} blocking issues: ${blockingIssues.slice(0, 3).join("; ")}`,
+              tags: ["critique", "blocking-issues"],
+              salience: 0.95,
+              source: "agent",
+            });
+          }
+
+          const assessment = critiqueJson?.overall_assessment;
+          if (assessment) {
+            await remember(env, {
+              user_id,
+              project_id,
+              kind: "fact",
+              text: `PRD critique scores: clarity=${assessment.clarity_score}/10, completeness=${assessment.completeness_score}/10`,
+              tags: ["critique", "assessment"],
+              salience: 0.8,
+              source: "agent",
+            });
+          }
+        }
+
+        return json({
+          ok: !hasError,
+          project_id,
+          critique: out.json,
+          provider: out.provider,
+        });
+      }
+
       // /bootstrap
       if (url.pathname === "/bootstrap" && req.method === "POST") {
         const body = await readJson(req) as Record<string, unknown>;
@@ -547,8 +733,8 @@ export default {
           SYNTHESIZED_JSON: JSON.stringify(synthesized),
         });
 
-        // prefer Anthropic for bootstrap if configured
-        const out = await bootstrapRepo(env, prompt, "anthropic");
+        // Use openrouter for bootstrap - handles long prompts better
+        const out = await bootstrapRepo(env, prompt, "openrouter");
 
         const outJson = out.json as { error?: string; files?: Array<{ path?: string; content?: string }> } | null;
         const files = outJson?.files;

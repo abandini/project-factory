@@ -10,7 +10,8 @@ export const OpenRouterProvider: Provider = {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    // 180s timeout for large generation tasks (bootstrap generates 6 files)
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
 
     try {
       // OpenRouter API (OpenAI-compatible)
@@ -21,12 +22,12 @@ export const OpenRouterProvider: Provider = {
           "content-type": "application/json",
           "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
           "HTTP-Referer": "https://project-factory.bill-burkey.workers.dev",
-          "X-Title": "Project Factory Brainstorm",
+          "X-Title": "Project Factory",
         },
         body: JSON.stringify({
-          // Use Mistral Large for fast, high-quality responses
-          model: "mistralai/mistral-large-2411",
-          max_tokens: 2048,
+          // Use Claude Sonnet for high-quality, detailed output
+          model: "anthropic/claude-sonnet-4",
+          max_tokens: 32768,  // Bootstrap needs space for 6 large markdown files
           temperature: 0.4,
           messages: [{ role: "user", content: prompt }],
         }),

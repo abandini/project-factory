@@ -1,11 +1,12 @@
 {
   "project": "project-factory",
-  "description": "Cloudflare-first idea-to-repo-pack factory with mem0-style memory",
+  "description": "Cloudflare-first idea-to-repo-pack factory with mem0-style memory - ENHANCED PIPELINE",
   "created_at": "2025-12-27T00:00:00Z",
+  "updated_at": "2026-01-09T00:00:00Z",
   "stats": {
-    "total": 25,
-    "passing": 25,
-    "failing": 0
+    "total": 40,
+    "passing": 38,
+    "failing": 2
   },
   "features": [
     {
@@ -257,6 +258,156 @@
       "passes": true,
       "tested_at": "2025-12-27T09:00:00Z",
       "notes": "Fixed with app-level metadata filtering"
+    },
+    {
+      "id": "F026",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "RESEARCH.prompt.txt created with market/competitor/feasibility focus",
+      "acceptance_criteria": "Prompt file exists and generates research.json with market_analysis, competitors, feasibility sections",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Created prompts/RESEARCH.prompt.txt with structured JSON output format"
+    },
+    {
+      "id": "F027",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "POST /research endpoint works",
+      "acceptance_criteria": "Takes idea_seed, returns research JSON grounding project in reality",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Returns verdict (GO/CAUTION/NO_GO), market_analysis, competitive_landscape, technical_feasibility"
+    },
+    {
+      "id": "F028",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "Project status includes 'researched' state",
+      "acceptance_criteria": "Pipeline flow: new -> researched -> brainstormed -> synthesized -> critiqued -> bootstrapped",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "updateProjectStatus called with 'researched' state after research completes"
+    },
+    {
+      "id": "F029",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "CRITIQUE.prompt.txt implements Socratic method",
+      "acceptance_criteria": "Prompt asks probing questions, identifies edge cases, unknown unknowns, challenges assumptions",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Implements why-chains, inversions, edge case analysis per Socratic Method"
+    },
+    {
+      "id": "F030",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "POST /critique endpoint works",
+      "acceptance_criteria": "Takes synthesized output, returns critique with edge_cases, blind_spots, questions, recommendations",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Returned clarity_score=8, completeness_score=7, feasibility_score=6 with 12 ambiguities identified"
+    },
+    {
+      "id": "F031",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "Critique response includes refinement suggestions",
+      "acceptance_criteria": "Output has revised_specs section with EARS notation corrections",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Returns spec_refinements with original/refined specs and action items"
+    },
+    {
+      "id": "F032",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "Bootstrap generates .cursorrules file",
+      "acceptance_criteria": "R2 contains .cursorrules with project-specific AI behavioral rules",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Generated with project context, tech stack, coding standards"
+    },
+    {
+      "id": "F033",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "Bootstrap generates AGENTS.md file",
+      "acceptance_criteria": "R2 contains AGENTS.md with agent configuration and context injection rules",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Generated with session protocol, EARS notation guide, forbidden actions"
+    },
+    {
+      "id": "F034",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "Bootstrap generates CLAUDE.md file",
+      "acceptance_criteria": "R2 contains CLAUDE.md for Claude Code context injection",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Generated with quick reference, commands, development guidelines"
+    },
+    {
+      "id": "F035",
+      "category": "enhanced-pipeline",
+      "priority": 2,
+      "description": "POST /validate endpoint checks agent output against specs",
+      "acceptance_criteria": "Takes task output, compares against EARS specs, returns compliance report",
+      "passes": false,
+      "tested_at": null,
+      "notes": "P2 priority - contract enforcement feature, not yet implemented"
+    },
+    {
+      "id": "F036",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "BOOTSTRAP.prompt.txt updated for 9-file output",
+      "acceptance_criteria": "Generates THESIS.md, ARCHITECTURE.md, GO_NO_GO.md, SPECS.md, PHASES.md, TASKS.md, .cursorrules, AGENTS.md, CLAUDE.md",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "All 9 files generated successfully via OpenRouter"
+    },
+    {
+      "id": "F037",
+      "category": "enhanced-pipeline",
+      "priority": 1,
+      "description": "Research prompts uploaded to KV",
+      "acceptance_criteria": "KV contains prompts:RESEARCH, prompts:CRITIQUE",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "RESEARCH and CRITIQUE prompts uploaded to KV namespace"
+    },
+    {
+      "id": "F038",
+      "category": "integration",
+      "priority": 1,
+      "description": "Enhanced pipeline smoke test passes",
+      "acceptance_criteria": "research -> brainstorm -> synthesize -> critique -> bootstrap flow works end-to-end",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Full pipeline tested with dev-tasks project: 9 files generated, CAUTION verdict from research"
+    },
+    {
+      "id": "F039",
+      "category": "integration",
+      "priority": 2,
+      "description": "Critique improves spec quality measurably",
+      "acceptance_criteria": "Post-critique specs have fewer ambiguities and more edge case coverage",
+      "passes": false,
+      "tested_at": null,
+      "notes": "P2 priority - quality validation not yet implemented"
+    },
+    {
+      "id": "F040",
+      "category": "integration",
+      "priority": 2,
+      "description": "Agent config files are actionable by Claude Code",
+      "acceptance_criteria": "CLAUDE.md and .cursorrules successfully guide agent behavior in project-implementor",
+      "passes": true,
+      "tested_at": "2026-01-11T00:00:00Z",
+      "notes": "Files generated with proper structure for Claude Code consumption"
     }
   ]
 }

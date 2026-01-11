@@ -1,13 +1,618 @@
-Generate repo pack markdown files from synthesized JSON.
-Return JSON:
+You are generating the project documentation pack from a synthesized specification.
+
+Your output will be used directly by an autonomous AI agent to build this project. Generate REAL, DETAILED content - not placeholders or templates.
+
+## OUTPUT FORMAT
+
+Return a JSON object with this EXACT structure:
+
+```json
 {
   "files": [
-    {"path":"THESIS.md","content":"..."},
-    {"path":"ARCHITECTURE.md","content":"..."},
-    {"path":"GO_NO_GO.md","content":"..."},
-    {"path":"TASKS.md","content":"..."}
+    {"path": "THESIS.md", "content": "..."},
+    {"path": "ARCHITECTURE.md", "content": "..."},
+    {"path": "GO_NO_GO.md", "content": "..."},
+    {"path": "SPECS.md", "content": "..."},
+    {"path": "PHASES.md", "content": "..."},
+    {"path": "TASKS.md", "content": "..."},
+    {"path": ".cursorrules", "content": "..."},
+    {"path": "AGENTS.md", "content": "..."},
+    {"path": "CLAUDE.md", "content": "..."}
   ]
 }
+```
 
-SYNTHESIZED_JSON:
+## FILE CONTENT REQUIREMENTS
+
+### THESIS.md
+```markdown
+# {Project Name}
+
+> {One-liner description}
+
+## Problem Statement
+
+{2-3 paragraphs describing the problem in detail. Be specific about who has this problem, how they currently solve it, and why current solutions are inadequate.}
+
+## Target Users
+
+**Primary**: {Detailed description of primary user persona}
+
+**Secondary**: {Secondary users if applicable}
+
+## Value Proposition
+
+{Why this solution is valuable. What's the 10x improvement?}
+
+## Why Now?
+
+{Market timing, technology enablers, competitive landscape}
+
+## Initial Wedge
+
+{The specific entry point - first use case that proves value}
+
+## Success Metrics
+
+| Metric | Target | Timeframe |
+|--------|--------|-----------|
+| {metric} | {target} | {when} |
+
+## Risks & Mitigations
+
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| {risk} | High/Medium/Low | {mitigation} |
+
+## Non-Goals (Out of Scope)
+
+- {What this project will NOT do}
+```
+
+### ARCHITECTURE.md
+```markdown
+# System Architecture
+
+## Overview
+
+{3-4 paragraphs describing the system architecture at a high level. How do components interact? What's the data flow? What are the key technical decisions?}
+
+## System Diagram
+
+{ASCII art or mermaid diagram showing component relationships}
+
+## Cloudflare Services
+
+### Workers
+
+**Main Worker**: `{worker-name}`
+- Entry point: `src/worker.ts`
+- Responsibilities:
+  - {responsibility 1}
+  - {responsibility 2}
+
+### D1 Database
+
+**Database**: `{database-name}`
+
+#### Tables
+
+##### {table_name}
+{Purpose of this table}
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | TEXT | PRIMARY KEY | Unique identifier |
+| {column} | {type} | {constraints} | {description} |
+
+**Indexes**:
+- `{index definition}`
+
+##### {next_table}
+{Repeat for each table}
+
+### R2 Storage
+
+**Bucket**: `{bucket-name}`
+
+| Prefix | Contents | Content-Type |
+|--------|----------|--------------|
+| `{prefix}/` | {what's stored} | {mime type} |
+
+### KV Namespace
+
+**Namespace**: `{namespace-name}`
+
+| Key Pattern | Value | TTL | Purpose |
+|-------------|-------|-----|---------|
+| `{pattern}` | {value type} | {ttl} | {purpose} |
+
+### Vectorize
+
+**Index**: `{index-name}`
+- Dimensions: {768}
+- Metric: {cosine}
+- Use case: {what needs vector search}
+
+### Workers AI Models
+
+| Model | Use Case |
+|-------|----------|
+| `@cf/meta/llama-3.1-70b-instruct` | {use case} |
+| `@cf/baai/bge-base-en-v1.5` | {use case} |
+
+### External Services
+
+| Service | Purpose | Secret |
+|---------|---------|--------|
+| {service} | {why needed} | `{SECRET_NAME}` |
+
+## API Design
+
+**Base URL**: `https://{worker-name}.{account}.workers.dev`
+
+### Authentication
+
+{How authentication works - JWT, API keys, etc.}
+
+### Endpoints
+
+#### `{METHOD} {/path}`
+
+{Description of what this endpoint does}
+
+**Request**:
+```json
+{request body example}
+```
+
+**Response** (`{status}`):
+```json
+{response body example}
+```
+
+**Errors**:
+- `400`: {when}
+- `401`: {when}
+- `404`: {when}
+
+{Repeat for each endpoint}
+
+## Data Flow
+
+1. {Step 1 of how data flows through the system}
+2. {Step 2}
+3. {Step 3}
+
+## Security
+
+### Authentication
+{How users authenticate}
+
+### Authorization
+{How permissions are enforced}
+
+### Secrets Management
+All secrets stored via `wrangler secret put`:
+- `{SECRET_NAME}`: {what it's for}
+
+### Rate Limiting
+{Rate limit strategy}
+
+### Input Validation
+{How inputs are validated}
+
+## Observability
+
+### Logging
+{What gets logged and where}
+
+### Error Handling
+{How errors are caught, logged, and reported}
+```
+
+### GO_NO_GO.md
+```markdown
+# Go/No-Go Decision
+
+## Decision: **GO** ✅
+
+{Rationale for the decision}
+
+## Go Criteria (All Must Be True)
+
+- [x] {Criterion 1}
+- [x] {Criterion 2}
+- [x] {Criterion 3}
+
+## Stop Conditions
+
+The project should be paused or cancelled if:
+
+- {Stop condition 1}
+- {Stop condition 2}
+
+## Budget Estimate
+
+| Category | Estimate | Notes |
+|----------|----------|-------|
+| Cloudflare (Workers, D1, R2) | ${X}/month | At {Y} scale |
+| External APIs | ${X}/month | {breakdown} |
+| Development Effort | {X} person-weeks | |
+
+## Technical Feasibility
+
+### Proven Patterns
+- {Pattern 1 that's well-established}
+- {Pattern 2}
+
+### Novel/Risky Areas
+- {Area 1 that's experimental}
+- {Area 2}
+
+## Risk Assessment
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|------------|--------|------------|
+| {risk} | High/Med/Low | High/Med/Low | {mitigation} |
+```
+
+### SPECS.md
+```markdown
+# EARS Specifications
+
+## Overview
+
+This document contains all functional requirements in EARS (Easy Approach to Requirements Syntax) notation. Each specification is testable and traceable to implementation tasks.
+
+## Specification Format
+
+- **WHEN** [trigger] **THE SYSTEM SHALL** [response] - Event-driven
+- **IF** [condition] **THEN THE SYSTEM SHALL** [response] - Conditional
+- **THE SYSTEM SHALL** [behavior] - Unconditional
+- **WHILE** [state] **THE SYSTEM SHALL** [behavior] - State-driven
+
+---
+
+## Infrastructure Specifications
+
+### SPEC-001: {Category}
+**EARS**: {THE SYSTEM SHALL / WHEN x THE SYSTEM SHALL...}
+
+**Rationale**: {Why this requirement exists}
+
+**Phase**: {phase-1}
+
+**Testable**: Yes
+
+**Verification**: {How to verify this is implemented correctly}
+
+---
+
+### SPEC-002: {Category}
+{Repeat for each spec}
+
+---
+
+## API Specifications
+
+### SPEC-0XX: {Endpoint Name}
+{Continue with API-related specs}
+
+---
+
+## Security Specifications
+
+### SPEC-0XX: {Security Requirement}
+{Security-related specs}
+```
+
+### PHASES.md
+```markdown
+# Implementation Phases
+
+## Phase 1: {Name}
+
+**Duration**: {X weeks}
+
+**Objective**: {What this phase accomplishes}
+
+**Dependencies**: None
+
+### Deliverables
+- {Deliverable 1}
+- {Deliverable 2}
+
+### Tasks
+- TASK-001: {title}
+- TASK-002: {title}
+
+### Exit Criteria
+- [ ] {Criterion 1}
+- [ ] {Criterion 2}
+
+---
+
+## Phase 2: {Name}
+
+**Duration**: {X weeks}
+
+**Objective**: {What this phase accomplishes}
+
+**Dependencies**: Phase 1
+
+### Deliverables
+- {Deliverable 1}
+
+### Tasks
+- TASK-0XX: {title}
+
+### Exit Criteria
+- [ ] {Criterion}
+
+{Repeat for each phase}
+```
+
+### TASKS.md
+```markdown
+# Implementation Tasks
+
+## Priority Legend
+- **P0**: Must have for MVP
+- **P1**: Important, should have
+- **P2**: Nice to have
+
+## Phase 1: {Phase Name}
+
+### TASK-001: {Title}
+
+**Type**: infra | feature | api | test | docs
+
+**Priority**: P0
+
+**Specs**: SPEC-001, SPEC-002
+
+**Description**:
+{Detailed description of what needs to be done. Include specific file paths, function names, and technical details.}
+
+**Acceptance Criteria**:
+- [ ] {Specific, testable criterion}
+- [ ] {Another criterion}
+- [ ] {Another criterion}
+
+**Estimated Complexity**: simple | moderate | complex
+
+---
+
+### TASK-002: {Title}
+{Repeat for each task}
+
+---
+
+## Phase 2: {Phase Name}
+
+### TASK-0XX: {Title}
+{Continue with phase 2 tasks}
+```
+
+### .cursorrules
+```
+# {Project Name} - AI Coding Rules
+
+## Project Context
+{Brief description of what this project does and its tech stack}
+
+## Tech Stack
+- Runtime: Cloudflare Workers
+- Database: D1 (SQLite)
+- Storage: R2
+- Cache: KV
+- Language: TypeScript (strict mode)
+
+## Coding Standards
+
+### TypeScript
+- Use strict mode always
+- Prefer interfaces over types for object shapes
+- Never use `any` - use `unknown` with type guards
+- Use descriptive function names (verbs)
+- Constants in SCREAMING_SNAKE_CASE
+
+### Error Handling
+- Always wrap async operations in try-catch
+- Return structured error responses: { success: false, error: { code, message } }
+- Log errors with context before returning
+
+### API Design
+- RESTful endpoints with JSON responses
+- Always validate input at system boundaries
+- Include CORS headers on all responses
+
+## File Organization
+```
+src/
+  worker.ts      - Main entry point
+  core/          - Utilities and shared code
+  routes/        - API endpoint handlers
+  services/      - Business logic
+  types/         - TypeScript interfaces
+```
+
+## Do NOT
+- Commit API keys or secrets
+- Use console.log in production (use proper logging)
+- Create files without clear purpose
+- Add dependencies without justification
+
+## Testing
+- Write tests for critical business logic
+- Test error paths, not just happy paths
+- Mock external services
+
+## When Uncertain
+- Ask clarifying questions before implementing
+- Reference SPECS.md for requirements
+- Check ARCHITECTURE.md for technical decisions
+```
+
+### AGENTS.md
+```markdown
+# Agent Configuration for {Project Name}
+
+## Overview
+
+This document configures AI agents (Claude, Cursor, etc.) to work effectively on this project. Agents should read this file before starting any work.
+
+## Project Understanding
+
+**What this project does:**
+{1-2 sentence description}
+
+**Key constraints:**
+- Built on Cloudflare Workers (edge-first architecture)
+- TypeScript strict mode
+- All data in D1/R2/KV (no external databases)
+
+## Context Files
+
+Before any coding task, agents MUST read:
+1. `SPECS.md` - The source of truth for requirements
+2. `ARCHITECTURE.md` - Technical decisions and schemas
+3. `TASKS.md` - Current work breakdown
+
+## Working with Specifications
+
+### EARS Notation
+All requirements use EARS (Easy Approach to Requirements Syntax):
+- **WHEN** [trigger] **THE SYSTEM SHALL** [response] - Event-driven
+- **IF** [condition] **THEN THE SYSTEM SHALL** [response] - Conditional
+- **THE SYSTEM SHALL** [behavior] - Unconditional
+
+### Task Completion
+A task is ONLY complete when:
+- [ ] All acceptance criteria are met
+- [ ] Code compiles without errors
+- [ ] Related EARS specs are satisfied
+- [ ] No console errors or warnings
+
+## Session Protocol
+
+### Starting Work
+1. Read `TASKS.md` to identify current task
+2. Read relevant SPECS for that task
+3. Announce what you're implementing
+4. Implement incrementally with verification
+
+### Ending Work
+1. Ensure code compiles
+2. List what was completed
+3. Note any blockers or questions
+4. Suggest next steps
+
+## Communication Style
+
+- Be direct and technical
+- Ask clarifying questions early
+- Reference spec IDs (e.g., "Per SPEC-005...")
+- Admit uncertainty rather than guessing
+
+## Forbidden Actions
+
+- Do NOT modify specs without explicit approval
+- Do NOT skip error handling
+- Do NOT commit secrets or API keys
+- Do NOT make architectural changes without discussion
+```
+
+### CLAUDE.md
+```markdown
+# CLAUDE.md - Project Context for Claude Code
+
+This file provides context to Claude Code when working on this project.
+
+## Project Overview
+
+**Name:** {Project Name}
+**Description:** {One-liner description}
+**Stack:** Cloudflare Workers, D1, R2, KV, TypeScript
+
+## Quick Reference
+
+### Key Files
+- `src/worker.ts` - Main entry point
+- `SPECS.md` - Requirements (EARS notation)
+- `ARCHITECTURE.md` - Technical design
+- `TASKS.md` - Work breakdown
+
+### Commands
+```bash
+npm run dev      # Local development
+npm run deploy   # Deploy to Cloudflare
+npm run test     # Run tests
+```
+
+### Database
+- D1 database: `{database_name}`
+- Key tables: {list main tables}
+
+### Environment Variables (Secrets)
+{List required secrets, NOT their values}
+- `SECRET_NAME` - Description of what it's for
+
+## Development Guidelines
+
+### Before Making Changes
+1. Read the relevant section in SPECS.md
+2. Check ARCHITECTURE.md for related technical decisions
+3. Verify you understand the acceptance criteria
+
+### Code Style
+- TypeScript strict mode
+- Interfaces for object shapes
+- Structured error responses
+- CORS headers on all endpoints
+
+### Testing
+- Test error paths explicitly
+- Mock external services
+- Verify against EARS specs
+
+## Common Tasks
+
+### Adding a New Endpoint
+1. Add route in `src/worker.ts`
+2. Create handler in `src/routes/`
+3. Add types in `src/types/`
+4. Update ARCHITECTURE.md if needed
+
+### Database Changes
+1. Create migration in `sql/`
+2. Run locally: `wrangler d1 migrations apply DB --local`
+3. Update schema docs in ARCHITECTURE.md
+
+## Troubleshooting
+
+### Common Errors
+- D1_ERROR: Check SQL syntax and table names
+- R2_ERROR: Verify bucket permissions
+- TIMEOUT: Check for long-running operations
+
+### Debugging
+- Use `wrangler tail` for production logs
+- Check `wrangler dev` console for local issues
+```
+
+## SYNTHESIZED INPUT
+
 {{SYNTHESIZED_JSON}}
+
+## INSTRUCTIONS
+
+1. Generate REAL content from the synthesized JSON - not templates or placeholders
+2. Every table, endpoint, spec, and task must be specific to THIS project
+3. The D1 schema in ARCHITECTURE.md must have ACTUAL columns and types
+4. The API endpoints must have ACTUAL request/response examples
+5. The SPECS must be REAL requirements for THIS project
+6. The TASKS must be detailed enough for an engineer to implement
+
+The agent building this project will use these documents as the source of truth. Make them complete and accurate.
